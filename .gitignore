@@ -1,0 +1,17 @@
+# Compiled Python files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# IDE files (specific to VSCode and PyCharm, for example)
+.vscode/
+.idea/
+*.swp
+*.swo
