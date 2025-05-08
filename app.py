@@ -138,7 +138,7 @@ def change_board(board):
     if not has_valid_move(board, current_player):
         chat_assistant(f"No valid moves for {'⚫' if current_player == 1 else '🔴'}. Turn skipped.", True) # needs fix for ai
         st.session_state.count += 1
-        st.session_state.ai = not st.session_state.ai # Player or AI has to move twice now, so the bool has to change
+        change_s_state_ai(not st.session_state.ai) # Player or AI has to move twice now, so the bool has to change
         st.rerun()
 
 
@@ -162,6 +162,7 @@ def change_board(board):
 def restart_game():
     """Restart the game and clear chat history."""
     st.session_state.clear()  # Clear all session state variables
+    st.rerun()  # Rerun the app to reset the game
 
 def ai_move(board, player):
     for row in range(8):
@@ -169,57 +170,91 @@ def ai_move(board, player):
             if is_legal_move(board, player, row, col) is not False:
                 st.session_state.clicked_cell = (row, col)
                 st.session_state.rerun = True
-                st.session_state.ai = True
-                st.session_state.ai = False # ONLY IF SECOND AI IS ON!!
+                change_s_state_ai(True)
                 st.rerun()
                 return
+            
+def select_buttons():
+    st.title("Select Game Mode")
+    if st.button("P v P"):
+        st.session_state.clear()  # Clear all session state variables
+        st.session_state.player = 3
+        st.session_state.page = "game"
+    if st.button("P v AI"):
+        st.session_state.clear()
+        st.session_state.player = 2
+        st.session_state.page = "game"
+    if st.button("AI v P"):
+        st.session_state.clear()
+        st.session_state.player = 1
+        st.session_state.page = "game"
+    if st.button("AI v AI"):
+        st.session_state.clear()
+        st.session_state.player = 0
+        st.session_state.page = "game"
+
+
+def change_s_state_ai(bool):
+    if st.session_state.player == 1 or st.session_state.player == 2: # rerun depends if AI moved just now or not
+        st.session_state.ai = bool
+        st.write(f"test3{st.session_state.player}")
+    elif st.session_state.player == 0: # always rerun
+        st.session_state.ai = False
+    else: # No need for rerun
+        st.session_state.ai = True
+
 
 def main():
 
-    # Set up the title and layout for Streamlit app
-    st.title("Othello Game")
-    
-    # Add a restart button
-    if st.button("Restart Game"):
-        restart_game()
-    
-    if 'board' in st.session_state:  
-        board = st.session_state.board
-    else:
-        board = initialize_board()
-    if "count" not in st.session_state:
-        st.session_state.count = 1
-    if "rerun" not in st.session_state:
-        st.session_state.rerun = False
-    if "game_over" not in st.session_state:
-        st.session_state.game_over = False
-    if "ai" not in st.session_state:
-        st.session_state.ai = True   
-    elif st.session_state.rerun == False: # No turn for rendering
-        st.session_state.ai = False
-    
-
-    if not st.session_state.rerun and not st.session_state.game_over:
-        # Add ai - red
-        if st.session_state.count % 2 == 0:
-            time.sleep(1)
-            ai_move(board, -1)
-
-        # Add ai - black
-        if st.session_state.count % 2 == 1:
-            time.sleep(1)
-            ai_move(board, 1)
-    bool = change_board(board)
+    if "page" not in st.session_state:
+        st.session_state.page = "select"
+    if st.session_state.page == "select": # render select screen
+        select_buttons()
+    else: # render normal screen
+        # Set up the title and layout for Streamlit app
+        st.title("Othello Game")
+        
+        # Add a restart button
+        if st.button("Restart Game"):
+            restart_game()
+        
+        if 'board' in st.session_state:  
+            board = st.session_state.board
+        else:
+            board = initialize_board()
+        if "count" not in st.session_state:
+            st.session_state.count = 1
+        if "rerun" not in st.session_state:
+            st.session_state.rerun = False
+        if "game_over" not in st.session_state:
+            st.session_state.game_over = False
+        if "ai" not in st.session_state:
+            change_s_state_ai(True)   
+        elif st.session_state.rerun == False: # No turn for rendering
+            change_s_state_ai(False)
 
 
+        if not st.session_state.rerun and not st.session_state.game_over and st.session_state.player < 3:
+            # Add ai - red
+            if st.session_state.count % 2 == 0 and st.session_state.player != 1:
+                time.sleep(1)
+                ai_move(board, -1)
 
-    board = st.session_state.board  # Get the updated board from session state
-    st.session_state.rerun = False  # Reset rerun flag
-    render_board(board)  # Render the board
-    if bool is False: # Invalid move, no need to rerun
-        return
-    if not st.session_state.ai and not st.session_state.game_over: # If AI didn't move, it means that it will move next turn
-        st.rerun()
+            # Add ai - black
+            if st.session_state.count % 2 == 1 and st.session_state.player < 2:
+                time.sleep(1)
+                ai_move(board, 1)
+        bool = change_board(board)
+
+
+
+        board = st.session_state.board  # Get the updated board from session state
+        st.session_state.rerun = False  # Reset rerun flag
+        render_board(board)  # Render the board
+        if bool is False: # Invalid move, no need to rerun
+            return
+        if not st.session_state.ai and not st.session_state.game_over: # If AI didn't move, it means that it will move next turn
+            st.rerun()
 
 # Run the app
 if __name__ == "__main__":
