@@ -176,19 +176,19 @@ def ai_move(board, player):
             
 def select_buttons():
     st.title("Select Game Mode")
-    if st.button("P v P"):
+    if st.button("Player vs. Player"):
         st.session_state.clear()  # Clear all session state variables
         st.session_state.player = 3
         st.session_state.page = "game"
-    if st.button("P v AI"):
+    if st.button("Player vs. AI"):
         st.session_state.clear()
         st.session_state.player = 2
         st.session_state.page = "game"
-    if st.button("AI v P"):
+    if st.button("AI vs. Player"):
         st.session_state.clear()
         st.session_state.player = 1
         st.session_state.page = "game"
-    if st.button("AI v AI"):
+    if st.button("AI vs. AI"):
         st.session_state.clear()
         st.session_state.player = 0
         st.session_state.page = "game"
