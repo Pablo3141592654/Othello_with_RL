@@ -2,6 +2,13 @@ import streamlit as st
 import numpy as np
 import copy
 import time
+# import firebase_admin # TODO
+# from firebase_admin import credentials, db
+# # Initialize Firebase Admin SDK
+# cred = credentials.Certificate("path/to/your/serviceAccountKey.json")  # TODO Path to your Firebase service account key
+# firebase_admin.initialize_app(cred, {
+#     'databaseURL': 'https://YOUR_PROJECT_ID.firebaseio.com/'  # TODO Your database URL
+# })
 
 # Define a function to render the Othello board
 def render_board(board):
@@ -176,35 +183,61 @@ def ai_move(board, player):
             
 def select_buttons():
     st.title("Select Game Mode")
+    if st.button("online"):
+        st.session_state.mode = 4
+        if "player" not in st.session_state:
+            st.session_state.mode = [player_id, 1/-1] # TODO (from firestore maybe)# replace with actual values
+        if "game_id" not in st.session_state:
+            st.session_state.game_id = "game_id"  # TODO Replace with a unique identifier for the game
     if st.button("Player vs. Player"):
         st.session_state.clear()  # Clear all session state variables
-        st.session_state.player = 3
+        st.session_state.mode = 3
         st.session_state.page = "game"
     if st.button("Player vs. AI"):
         st.session_state.clear()
-        st.session_state.player = 2
+        st.session_state.mode = 2
         st.session_state.page = "game"
     if st.button("AI vs. Player"):
         st.session_state.clear()
-        st.session_state.player = 1
+        st.session_state.mode = 1
         st.session_state.page = "game"
     if st.button("AI vs. AI"):
         st.session_state.clear()
-        st.session_state.player = 0
+        st.session_state.mode = 0
         st.session_state.page = "game"
 
 
 def change_s_state_ai(bool):
-    if st.session_state.player == 1 or st.session_state.player == 2: # rerun depends if AI moved just now or not
+    if st.session_state.mode == 1 or st.session_state.mode == 2: # rerun depends if AI moved just now or not
         st.session_state.ai = bool
-        st.write(f"test3{st.session_state.player}")
-    elif st.session_state.player == 0: # always rerun
+        st.write(f"test3{st.session_state.mode}")
+    elif st.session_state.mode == 0: # always rerun
         st.session_state.ai = False
     else: # No need for rerun
         st.session_state.ai = True
 
 
+def save_game_state(board, current_player, game_id):
+    game_data = {
+        'board': board.tolist(),  # Convert numpy array to list
+        'current_player': current_player,
+        'status': 'ongoing'
+    }
+    db.reference(f'games/{game_id}').set(game_data)
+
+def load_game_state(game_id):
+    game_data = db.reference(f'games/{game_id}').get()
+    if game_data:
+        board = np.array(game_data['board'])  # Convert list back to numpy array
+        current_player = game_data['current_player']
+        return board, current_player
+    return initialize_board(), 1  # Default to initial board and player 1
+
+
 def main():
+
+    if "current_player" not in st.session_state:
+        st.session_state.current_player = 1 # black begins always
 
     if "page" not in st.session_state:
         st.session_state.page = "select"
@@ -234,27 +267,43 @@ def main():
             change_s_state_ai(False)
 
 
-        if not st.session_state.rerun and not st.session_state.game_over and st.session_state.player < 3:
+        if not st.session_state.rerun and not st.session_state.game_over and st.session_state.mode < 3:
             # Add ai - red
-            if st.session_state.count % 2 == 0 and st.session_state.player != 1:
+            if st.session_state.count % 2 == 0 and st.session_state.mode != 1:
                 time.sleep(1)
                 ai_move(board, -1)
 
             # Add ai - black
-            if st.session_state.count % 2 == 1 and st.session_state.player < 2:
+            if st.session_state.count % 2 == 1 and st.session_state.mode < 2:
                 time.sleep(1)
                 ai_move(board, 1)
+
+        if st.session_state.mode == 4: # online
+            if st.session_state.current_player != st.session_state.player[1]: # if not players turn, program wont pass this step
+                st.session_state.board, st.session_state.current_player = load_game_state(st.session_state.game_id)
+                if st.session_state.current_player == st.session_state.player[1]:
+                    render_board(st.session_state.board)
+                else:    
+                    st.write("It's not your turn yet. Please wait for your opponent to make a move.")
+                st.rerun()
+
+
+        
         bool = change_board(board)
 
 
 
         board = st.session_state.board  # Get the updated board from session state
+
+        if st.session_state.mode == 4: # online
+            save_game_state(board=board, current_player=st.session_state.current_player, game_id=st.session_state.game_id)
         st.session_state.rerun = False  # Reset rerun flag
         render_board(board)  # Render the board
         if bool is False: # Invalid move, no need to rerun
             return
         if not st.session_state.ai and not st.session_state.game_over: # If AI didn't move, it means that it will move next turn
             st.rerun()
+
 
 # Run the app
 if __name__ == "__main__":
