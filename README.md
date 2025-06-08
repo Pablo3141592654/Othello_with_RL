@@ -110,4 +110,98 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
+## 🧩 Code Structure & Logic
+
+The project is organized for clarity and extensibility:
+
+```
+Othello_with_RL/
+│
+├── app.py                # Main Streamlit app: UI, game loop, and session state
+├── cache.py              # (Legacy) Streamlit cache clearing
+├── game/
+│   ├── __init__.py
+│   ├── board.py          # (Planned) Board logic and utilities
+│   ├── player.py         # (Planned) Player and AI agent classes
+│   └── utils.py          # (Planned) Helper functions
+├── README.md
+├── LICENSE
+└── .gitignore
+```
+
+### Main Logic (`app.py`)
+
+- **UI & Game Loop:**  
+  Handles the Streamlit interface, game state, and user interactions.  
+  - `render_board`: Draws the board and handles cell clicks.
+  - `initialize_board`: Sets up the initial Othello board.
+  - `is_legal_move`: Checks and applies legal moves.
+  - `ai_move`: Simple AI (currently picks the first valid move).
+  - `select_buttons`: Lets users pick the game mode.
+  - `main`: Orchestrates the game flow, including AI turns and session state.
+
+- **Session State:**  
+  Used to track the board, turn count, chat log, and game mode across reruns.
+
+- **Chat Assistant:**  
+  Sidebar chat log for move feedback and game status.
+
+- **Online Multiplayer (Planned):**  
+  Placeholder functions for saving/loading game state with Firebase.
+
+### Modular Game Logic (`game/`)
+
+- **`game/board.py`**  
+  *Planned*: Move board-related logic (e.g., move validation, board updates) here for better separation.
+
+- **`game/player.py`**  
+  *Planned*: Implement player classes, including:
+    - Human player
+    - Classic AI (Minimax/Alpha-Beta, heuristics) — *Pablo's task*
+    - RL agent — *Jonas's task*
+
+- **`game/utils.py`**  
+  *Planned*: Utility functions (e.g., move generation, scoring, serialization).
+
+### Where to Add New Features
+
+- **Advanced AI Agents:**  
+  - RL agent: Implement in `game/player.py` (Jonas).
+  - Classic AI: Implement in `game/player.py` (Pablo).
+  - Integrate these into `app.py`'s AI move logic.
+
+- **Online Multiplayer:**  
+  - Complete Firebase integration in `app.py` (see commented code).
+  - Add user authentication and real-time updates.
+
+- **UI/UX Improvements:**  
+  - Enhance chat assistant in `app.py`.
+  - Add move suggestions/hints (could use `game/utils.py`).
+
+- **Testing & Modularization:**  
+  - Move board and player logic from `app.py` to `game/`.
+  - Add unit tests for core logic (suggested: `tests/` folder).
+
+---
+
+## 💡 Future Improvement Ideas
+
+- **AI Difficulty Levels:**  
+  Allow users to select between different AI strategies and difficulties.
+
+- **Game Analysis:**  
+  Add move history, undo/redo, and post-game analysis.
+
+- **Mobile-Friendly UI:**  
+  Improve layout for smaller screens.
+
+- **User Profiles & Leaderboards:**  
+  Track stats and rankings for online play.
+
+---
+
+*See the code comments and [`game/`](game/) folder for more details and extension points!*
+
+---
+
 Enjoy playing Othello, and feel free to contribute or suggest features!
