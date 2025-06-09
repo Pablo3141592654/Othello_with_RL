@@ -1,3 +1,4 @@
+import time
 import streamlit as st
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
@@ -77,6 +78,12 @@ def select_buttons():
         st.rerun()
 
 def main():
+    # Add this at the top of main()
+    ai_think_time = st.sidebar.slider(
+        "AI thinking time (seconds)", min_value=0.0, max_value=3.0, value=0.5, step=0.1
+    )
+    st.session_state.ai_think_time = ai_think_time
+
     if "page" not in st.session_state:
         st.session_state.page = "select"
     if st.session_state.page == "select":
@@ -109,6 +116,7 @@ def main():
 
     # AI move handling
     if not isinstance(current_player, HumanPlayer):
+        time.sleep(st.session_state.ai_think_time)
         move = current_player.get_move(board_obj)
         if move:
             board_obj.apply_move(current_player.color, *move)
