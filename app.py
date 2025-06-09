@@ -1,6 +1,13 @@
 import streamlit as st
 from game.board import Board
-from game.player import HumanPlayer
+from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
+
+PLAYER_TYPES = {
+    "Human": HumanPlayer,
+    "Greedy Greta (simple AI)": GreedyGreta,
+    "Minimax Max (lookahead AI)": MinimaxMax,
+    "RL Random Riley (random RL)": RLRandomRiley,
+}
 
 def render_board(board):
     st.markdown("""
@@ -54,11 +61,20 @@ def render_board(board):
 
 def select_buttons():
     st.title("Othello with RL")
-    st.write("Select a game mode to start:")
-    if st.button("Human vs Human"):
+    st.write("Choose a player for each color:")
+
+    black_choice = st.selectbox("Black (⚫)", list(PLAYER_TYPES.keys()), key="black_player")
+    red_choice = st.selectbox("Red (🔴)", list(PLAYER_TYPES.keys()), key="red_player")
+
+    if st.button("Start Game"):
         st.session_state.page = "game"
+        st.session_state.players = [
+            PLAYER_TYPES[black_choice](1),
+            PLAYER_TYPES[red_choice](-1)
+        ]
+        st.session_state.current_player_idx = 0
+        st.session_state.board_obj = Board()
         st.rerun()
-    # Add more modes here in the future
 
 def main():
     if "page" not in st.session_state:
@@ -91,6 +107,18 @@ def main():
 
     render_board(board)
 
+    # AI move handling
+    if not isinstance(current_player, HumanPlayer):
+        move = current_player.get_move(board_obj)
+        if move:
+            board_obj.apply_move(current_player.color, *move)
+            st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
+            st.rerun()
+        else:
+            st.warning("No valid moves for AI. Passing turn.")
+            st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
+            st.rerun()
+
     if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
         i, j = st.session_state.clicked_cell
         st.session_state.clicked_cell = None
@@ -100,14 +128,23 @@ def main():
         else:
             st.warning("Invalid move. You need to outflank an opponent's piece.")
 
-    # Game over check
-    if not board_obj.has_valid_move(1) and not board_obj.has_valid_move(-1):
-        if black_count > red_count:
-            st.success("Game ended. ⚫ Black won!")
-        elif red_count > black_count:
-            st.success("Game ended. 🔴 Red won!")
+    # Check for valid moves for current player
+    if not board_obj.has_valid_move(current_player.color):
+        # If the other player also has no moves, game over
+        other_color = -current_player.color
+        if not board_obj.has_valid_move(other_color):
+            black_count, red_count = board_obj.count_pieces()
+            if black_count > red_count:
+                st.success("Game ended. ⚫ Black won!")
+            elif red_count > black_count:
+                st.success("Game ended. 🔴 Red won!")
+            else:
+                st.info("Game ended. It's a draw!")
+            st.stop()
         else:
-            st.info("Game ended. It's a draw!")
+            st.info(f"No valid moves for {'⚫' if current_player.color == 1 else '🔴'}. Passing turn.")
+            st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
+            st.rerun()
 
 if __name__ == "__main__":
     main()

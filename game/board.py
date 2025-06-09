@@ -1,5 +1,5 @@
-import numpy as np
 import copy
+import numpy as np
 
 class Board:
     def __init__(self):
@@ -64,8 +64,6 @@ class Board:
             return True
         return False
 
-
-    # not tested yet
     def get_valid_moves(self, player):
         moves = []
         for row in range(8):
@@ -73,3 +71,8 @@ class Board:
                 if self.is_legal_move(player, row, col) is not False:
                     moves.append((row, col))
         return moves
+
+    def copy(self):
+        new_board = Board()
+        new_board.state = self.state.copy()
+        return new_board
