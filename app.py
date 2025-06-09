@@ -3,9 +3,43 @@ from game.board import Board
 from game.player import HumanPlayer
 
 def render_board(board):
-    st.write("#### Board")
+    st.markdown("""
+        <style>
+        .othello-board-bg {
+            background: #116611;
+            padding: 8px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+        div[data-testid="stHorizontalBlock"] {
+            gap: 0 !important;
+        }
+        div[data-testid="column"] {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        button[kind="secondary"] {
+            min-width: 56px !important;
+            min-height: 56px !important;
+            width: 56px !important;
+            height: 56px !important;
+            font-size: 3.2rem !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            border: 1.5px solid #222 !important;
+            background: transparent !important;
+            line-height: 1 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="othello-board-bg">', unsafe_allow_html=True)
     for i in range(8):
-        cols = st.columns(8)
+        cols = st.columns(8, gap="small")  # gap will be overridden by CSS
         for j in range(8):
             cell = board[i][j]
             if cell == 1:
@@ -14,8 +48,9 @@ def render_board(board):
                 label = "🔴"
             else:
                 label = ""
-            if cols[j].button(label or " ", key=f"{i}-{j}"):
+            if cols[j].button(label, key=f"{i}-{j}"):
                 st.session_state.clicked_cell = (i, j)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def select_buttons():
     st.title("Othello with RL")
