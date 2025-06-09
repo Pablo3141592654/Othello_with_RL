@@ -114,6 +114,16 @@ def main():
 
     render_board(board)
 
+    # --- GAME OVER CHECK: If neither player can move, announce winner and stop ---
+    if not board_obj.has_valid_move(1) and not board_obj.has_valid_move(-1):
+        if black_count > red_count:
+            st.success("Game ended. ⚫ Black won!")
+        elif red_count > black_count:
+            st.success("Game ended. 🔴 Red won!")
+        else:
+            st.info("Game ended. It's a draw!")
+        st.stop()
+
     # AI move handling
     if not isinstance(current_player, HumanPlayer):
         time.sleep(st.session_state.ai_think_time)
