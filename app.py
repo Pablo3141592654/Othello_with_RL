@@ -1,13 +1,14 @@
 import time
 import streamlit as st
 from game.board import Board
-from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
+from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley, RLJonas  # <-- Add RLJonas here
 
 PLAYER_TYPES = {
     "Human": HumanPlayer,
     "Greedy Greta (simple AI)": GreedyGreta,
     "Minimax Max (lookahead AI)": MinimaxMax,
     "RL Random Riley (random RL)": RLRandomRiley,
+    "RL Jonas (deep RL)": RLJonas,  # <-- Add this line
 }
 
 def render_board(board):
