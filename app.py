@@ -1,17 +1,13 @@
 import time
 import streamlit as st
-import numpy as np
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
 
-PLAYER_FACTORIES = {
-    "Human": lambda color: HumanPlayer(color),
-    "Greedy Greta (simple AI)": lambda color: GreedyGreta(color),
-    "Minimax Max (lookahead AI)": lambda color: MinimaxMax(color, depths=[
-        st.session_state.get("black_depth", 2),
-        st.session_state.get("red_depth", 2)
-    ]),
-    "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
+PLAYER_TYPES = {
+    "Human": HumanPlayer,
+    "Greedy Greta (simple AI)": GreedyGreta,
+    "Minimax Max (lookahead AI)": MinimaxMax,
+    "RL Random Riley (random RL)": RLRandomRiley,
 }
 
 def render_board(board):
@@ -68,23 +64,18 @@ def select_buttons():
     st.title("Othello with RL")
     st.write("Choose a player for each color:")
 
-    black_choice = st.selectbox("Black (⚫)", list(PLAYER_FACTORIES.keys()), key="black_player")
-
-    red_choice = st.selectbox("Red (🔴)", list(PLAYER_FACTORIES.keys()), key="red_player")
-
-
+    black_choice = st.selectbox("Black (⚫)", list(PLAYER_TYPES.keys()), key="black_player")
+    red_choice = st.selectbox("Red (🔴)", list(PLAYER_TYPES.keys()), key="red_player")
 
     if st.button("Start Game"):
         st.session_state.page = "game"
         st.session_state.players = [
-            PLAYER_FACTORIES[black_choice](1),
-            PLAYER_FACTORIES[red_choice](-1)
+            PLAYER_TYPES[black_choice](1),
+            PLAYER_TYPES[red_choice](-1)
         ]
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
         st.rerun()
-
-
 
 def main():
     # Add this at the top of main()
@@ -92,16 +83,6 @@ def main():
         "AI thinking time (seconds)", min_value=0.0, max_value=3.0, value=0.5, step=0.1
     )
     st.session_state.ai_think_time = ai_think_time
-    
-    black_depth = st.sidebar.slider(
-        "Black AI depth (if applicable)", min_value=1, max_value=6, value=2, step=1
-    )
-    st.session_state.black_depth = black_depth
-
-    red_depth = st.sidebar.slider(
-        "Red AI depth (if applicable)", min_value=1, max_value=6, value=2, step=1
-    )
-    st.session_state.red_depth = red_depth
 
     if "page" not in st.session_state:
         st.session_state.page = "select"
