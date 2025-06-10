@@ -1,7 +1,28 @@
 import time
 import streamlit as st
+import firebase_admin
+from firebase_admin import credentials, db, firestore
+import numpy as np
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
+
+
+# Load credentials
+cred = credentials.Certificate("firebase_key.json")
+
+# Initialize the app
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
+
+# Get Firestore client
+db = firestore.client()
+
+# Example: Access your data
+doc_ref = db.collection("games").document("1")
+doc = doc_ref.get()
+if doc.exists:
+    print(doc.to_dict())
+
 
 PLAYER_FACTORIES = {
     "Human": lambda color: HumanPlayer(color),
@@ -78,6 +99,44 @@ def select_buttons():
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
         st.rerun()
+    if st.button("Online"):
+        board = Board().reset()
+        game_data = load_game_state(1)
+        st.session_state.online_color = game_data[1]  # Set online color based on loaded game state
+        st.session_state.online = True
+        st.session_state.page = "game"
+        st.rerun()
+
+def save_game_state(board, current_player, game_id):
+    # Flatten 2D board into a list of lists (Firestore doesn't support nested arrays beyond 1 level)
+    board_list = board.tolist()
+    if isinstance(board_list[0], list):
+        board_list = [cell for row in board_list for cell in row]  # Flatten to 1D list
+
+    game_data = {
+    'board': board_list,
+    'current_player': current_player,
+    'board_shape': board.shape  # Save shape to reconstruct later
+    }
+
+
+    doc_ref = db.collection("games").document(str(game_id))
+    doc_ref.set(game_data)
+    print(f"Saved game_data: {game_data}")
+
+def load_game_state(game_id):
+    doc_ref = db.collection("games").document(str(game_id))
+    game_data = doc_ref.get()
+    if game_data.exists:
+        data = game_data.to_dict()
+        shape = tuple(data.get('board_shape', (8, 8)))  # Default to 8x8 if shape is missing
+        board = np.array(data['board']).reshape(shape)
+        current_player = data['current_player']
+        return board, current_player
+
+    # Fallback: return a fresh board and default player
+    board = Board().reset()
+    return board, 1
 
 def main():
     # Add this at the top of main()
@@ -87,11 +146,11 @@ def main():
     st.session_state.ai_think_time = ai_think_time
 
     black_depth= st.sidebar.slider(
-        "Black AI depth", min_value=1, max_value=6, value=2)
+        "Black AI depth", min_value=1, max_value=5, value=2)
     st.session_state.black_depth = black_depth
 
     red_depth = st.sidebar.slider(
-        "Red AI depth", min_value=1, max_value=6, value=2)
+        "Red AI depth", min_value=1, max_value=5, value=2)
     st.session_state.red_depth = red_depth
 
     if "page" not in st.session_state:
@@ -109,6 +168,9 @@ def main():
 
     if "current_player_idx" not in st.session_state:
         st.session_state.current_player_idx = 0
+    
+    if "online" not in st.session_state:
+        st.session_state.online = False
 
     current_player = st.session_state.players[st.session_state.current_player_idx]
     board = board_obj.state
@@ -121,7 +183,9 @@ def main():
     black_count, red_count = board_obj.count_pieces()
     st.write(f"**⚫ Black: {black_count}** | **🔴 Red: {red_count}**")
     st.write(f"### Current Turn: {'⚫' if current_player.color == 1 else '🔴'}")
-
+    if st.session_state.online:
+        st.write("Online mode, you are playing as " + ("⚫" if st.session_state.online_color == 1 else "🔴"))
+        board_obj.state, current_player.color = load_game_state(1)  # Load game state from Firestore
     render_board(board)
 
     # --- GAME OVER CHECK: If neither player can move, announce winner and stop ---
@@ -132,29 +196,45 @@ def main():
             st.success("Game ended. 🔴 Red won!")
         else:
             st.info("Game ended. It's a draw!")
+        st.write("Game ended. Please close the tab or restart the game.")
+        st.session_state.clear()
+        Board().reset()  # Reset the board state
+        save_game_state(board_obj, 1, 1)  # Save empty board state
         st.stop()
 
-    # AI move handling
-    if not isinstance(current_player, HumanPlayer):
-        time.sleep(st.session_state.ai_think_time)
-        move = current_player.get_move(board_obj)
-        if move:
-            board_obj.apply_move(current_player.color, *move)
-            st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
-            st.rerun()
-        else:
-            st.warning("No valid moves for AI. Passing turn.")
-            st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
-            st.rerun()
+    if not st.session_state.online:  # Only handle AI moves if not online
+        # AI move handling
+        if not isinstance(current_player, HumanPlayer): # And not online
+            time.sleep(st.session_state.ai_think_time)
+            move = current_player.get_move(board_obj)
+            if move:
+                board_obj.apply_move(current_player.color, *move)
+                st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
+                st.rerun()
+            else:
+                st.warning("No valid moves for AI. Passing turn.")
+                st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
+                st.rerun()
 
-    if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
-        i, j = st.session_state.clicked_cell
-        st.session_state.clicked_cell = None
-        if board_obj.apply_move(current_player.color, i, j):
+    if not st.session_state.online or current_player.color == st.session_state.online_color:
+        if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
+            i, j = st.session_state.clicked_cell
+            st.session_state.clicked_cell = None
+            if board_obj.apply_move(current_player.color, i, j):
+                st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
+                if st.session_state.online:
+                    save_game_state(board_obj.state, current_player.color, 1)  # Replace with actual game ID logic
+                st.rerun()
+            else:
+                st.warning("Invalid move. You need to outflank an opponent's piece.")
+    else:
+        st.warning("Waiting for opponent's move...")
+        game_data = load_game_state(1) # Id is only 1 for testing now
+        if game_data[1] == current_player.color:
+            board_obj.state = game_data[0]
+            st.session_state.online_color = game_data[1]
             st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
-            st.rerun()
-        else:
-            st.warning("Invalid move. You need to outflank an opponent's piece.")
+        st.rerun()
 
     # Check for valid moves for current player
     if not board_obj.has_valid_move(current_player.color):
