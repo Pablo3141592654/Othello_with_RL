@@ -3,13 +3,15 @@ import streamlit as st
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
 
-PLAYER_TYPES = {
-    "Human": HumanPlayer,
-    "Greedy Greta (simple AI)": GreedyGreta,
-    "Minimax Max (lookahead AI)": MinimaxMax,
-    "RL Random Riley (random RL)": RLRandomRiley,
+PLAYER_FACTORIES = {
+    "Human": lambda color: HumanPlayer(color),
+    "Greedy Greta (simple AI)": lambda color: GreedyGreta(color),
+    "Minimax Max (lookahead AI)": lambda color: MinimaxMax(color, depths=[
+        st.session_state.get("black_depth", 2),
+        st.session_state.get("red_depth", 2)
+    ]),
+    "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
 }
-
 def render_board(board):
     st.markdown("""
         <style>
@@ -64,14 +66,14 @@ def select_buttons():
     st.title("Othello with RL")
     st.write("Choose a player for each color:")
 
-    black_choice = st.selectbox("Black (⚫)", list(PLAYER_TYPES.keys()), key="black_player")
-    red_choice = st.selectbox("Red (🔴)", list(PLAYER_TYPES.keys()), key="red_player")
+    black_choice = st.selectbox("Black (⚫)", list(PLAYER_FACTORIES.keys()), key="black_player")
+    red_choice = st.selectbox("Red (🔴)", list(PLAYER_FACTORIES.keys()), key="red_player")
 
     if st.button("Start Game"):
         st.session_state.page = "game"
         st.session_state.players = [
-            PLAYER_TYPES[black_choice](1),
-            PLAYER_TYPES[red_choice](-1)
+            PLAYER_FACTORIES[black_choice](1),
+            PLAYER_FACTORIES[red_choice](-1)
         ]
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
