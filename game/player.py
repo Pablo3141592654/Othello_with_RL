@@ -1,4 +1,5 @@
 import random
+from rl_agent.rl_agent import RLAgent
 
 class Player:
     def __init__(self, color):
@@ -77,3 +78,16 @@ class RLRandomRiley(Player):
     def get_move(self, board_obj):
         moves = board_obj.get_valid_moves(self.color)
         return random.choice(moves) if moves else None
+
+class RLJonas(Player):
+    """Deep RL agent using a neural network (DQN)."""
+    def __init__(self, color, model_path=None, epsilon=0.1):
+        super().__init__(color)
+        self.agent = RLAgent(color, epsilon=epsilon)
+        if model_path:
+            import torch
+            self.agent.model.load_state_dict(torch.load(model_path, map_location="cpu"))
+            self.agent.model.eval()
+
+    def get_move(self, board_obj):
+        return self.agent.get_move(board_obj)

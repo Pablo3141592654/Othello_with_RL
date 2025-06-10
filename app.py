@@ -6,7 +6,7 @@ import numpy as np
 from IPython.display import display
 import streamlit.components.v1 as components
 from game.board import Board
-from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley, EdgesEdgar
+from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley, EdgesEdgar, RLJonas  # <-- Add RLJonas here
 
 # Build credentials dict from Streamlit secrets
 firebase_config = {
@@ -57,6 +57,7 @@ PLAYER_FACTORIES = {
             st.session_state.get("border_value_red", 1)
         ],
     ),
+    "RL Jonas (deep RL)": lambda color: RLJonas(color, model_path="rl_agent.pth", epsilon=0.0),
 }
 
 def render_board(board):
