@@ -86,6 +86,14 @@ def main():
     )
     st.session_state.ai_think_time = ai_think_time
 
+    black_depth= st.sidebar.slider(
+        "Black AI depth", min_value=1, max_value=6, value=2)
+    st.session_state.black_depth = black_depth
+
+    red_depth = st.sidebar.slider(
+        "Red AI depth", min_value=1, max_value=6, value=2)
+    st.session_state.red_depth = red_depth
+
     if "page" not in st.session_state:
         st.session_state.page = "select"
     if st.session_state.page == "select":
@@ -168,3 +176,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
