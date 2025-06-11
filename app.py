@@ -6,11 +6,24 @@ import numpy as np
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
 
-# Load credentials
-cred = credentials.Certificate("firebase_key.json")
+# Build credentials dict from Streamlit secrets
+firebase_config = {
+    "type": st.secrets["firebase"]["type"],
+    "project_id": st.secrets["firebase"]["project_id"],
+    "private_key_id": st.secrets["firebase"]["private_key_id"],
+    "private_key": st.secrets["firebase"]["private_key"],
+    "client_email": st.secrets["firebase"]["client_email"],
+    "client_id": st.secrets["firebase"]["client_id"],
+    "auth_uri": st.secrets["firebase"]["auth_uri"],
+    "token_uri": st.secrets["firebase"]["token_uri"],
+    "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"],
+    "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"],
+    "universe_domain": st.secrets["firebase"]["universe_domain"],
+}
 
-# Initialize the app
+# Initialize Firebase app if not already initialized
 if not firebase_admin._apps:
+    cred = credentials.Certificate(firebase_config)
     firebase_admin.initialize_app(cred)
 
 # Get Firestore client
@@ -20,8 +33,9 @@ db = firestore.client()
 doc_ref = db.collection("games").document("1")
 doc = doc_ref.get()
 if doc.exists:
-    print(doc.to_dict())
-
+    st.write(doc.to_dict())
+else:
+    st.write("Document not found.")
 
 PLAYER_FACTORIES = {
     "Human": lambda color: HumanPlayer(color),
@@ -250,8 +264,6 @@ def main():
         st.warning("Waiting for opponent's move...")
         time.sleep(5)  # wait for opponent
         game_data = load_game_state(1) # Id is only 1 for testing now
-        firebase_color = game_data[1]
-        st.write(f"{firebase_color} vs {st.session_state.online_color}")
         if game_data[1] == st.session_state.online_color:
             board_obj.state = game_data[0]
             st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
