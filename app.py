@@ -83,7 +83,7 @@ def render_board(board):
            console.log("Clicked cell:", i, j):
            db.collection("clicked_cell").doc("1").set({
                cell: `${{i}},${{j}}`,
-           })
+           });
        }
     </script>
 
