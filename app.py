@@ -372,6 +372,7 @@ def main():
                     current_player = st.session_state.players[st.session_state.current_player_idx] # update before saving the color in firebase
                     if st.session_state.online:
                         save_game_state(board_obj.state, current_player.color, st.session_state.game_id)
+                    st.write("move_applied")
                     st.rerun()
                 else:
                     st.warning("Invalid move. You need to outflank an opponent's piece.")
