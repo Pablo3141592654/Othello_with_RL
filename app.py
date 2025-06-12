@@ -138,6 +138,7 @@ def render_board(board):
         st.session_state.clicked_cell = data["cell"]
     else:
         st.write("No cell clicked yet.")
+    st.rerun()
     return
 
 def select_buttons():
