@@ -223,53 +223,56 @@ def end_game():
     save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
     save_occupied(None, st.session_state.game_id)  # Reset occupied state
     st.session_state.clear()
-    st.stop()
+    st.rerun()
 
 def autoreset():
     if "time" not in st.session_state:
         st.session_state.time = time.time()
     if time.time() - st.session_state.time > 300:  # Reset after 5min
+        st.warning("Game has been reset due to inactivity.")
         end_game()
 
 
 def main():
-    # Add this at the top of main()
-    ai_think_time = st.sidebar.slider(
-        "AI thinking time (seconds)", min_value=0.0, max_value=3.0, value=0.5, step=0.1
-    )
-    st.session_state.ai_think_time = ai_think_time
-
-    black_depth= st.sidebar.slider(
-        "Black AI depth", min_value=1, max_value=5, value=2)
-    st.session_state.black_depth = black_depth
-
-    red_depth = st.sidebar.slider(
-        "Red AI depth", min_value=1, max_value=5, value=2)
-    st.session_state.red_depth = red_depth
-
-    if "page" not in st.session_state:
-        st.session_state.page = "select"
-    if st.session_state.page == "select":
-        select_buttons()
-        return
-
-    if "board_obj" not in st.session_state:
-        st.session_state.board_obj = Board()
-    board_obj = st.session_state.board_obj
-
-    if "players" not in st.session_state:
-        st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
-
-    if "current_player_idx" not in st.session_state:
-        st.session_state.current_player_idx = 0
-    
-    if "online" not in st.session_state:
-        st.session_state.online = False
-
     if "rerun" not in st.session_state:
-        st.session_state.rerun = False
-
+            st.session_state.rerun = False
+    
     if not st.session_state.rerun:
+        # Add this at the top of main()
+        ai_think_time = st.sidebar.slider(
+            "AI thinking time (seconds)", min_value=0.0, max_value=3.0, value=0.5, step=0.1
+        )
+        st.session_state.ai_think_time = ai_think_time
+
+        black_depth = st.sidebar.slider(
+            "Black AI depth", min_value=1, max_value=5, value=2)
+        st.session_state.black_depth = black_depth
+
+        red_depth = st.sidebar.slider(
+            "Red AI depth", min_value=1, max_value=5, value=2)
+        st.session_state.red_depth = red_depth
+
+        if "page" not in st.session_state:
+            st.session_state.page = "select"
+        if st.session_state.page == "select":
+            select_buttons()
+            return
+
+        if "board_obj" not in st.session_state:
+            st.session_state.board_obj = Board()
+        board_obj = st.session_state.board_obj
+
+        st.write("Test")
+
+        if "players" not in st.session_state:
+            st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
+
+        if "current_player_idx" not in st.session_state:
+            st.session_state.current_player_idx = 0
+        
+        if "online" not in st.session_state:
+            st.session_state.online = False
+    
         current_player = st.session_state.players[st.session_state.current_player_idx]
         board = board_obj.state
 
@@ -327,15 +330,16 @@ def main():
                 else:
                     st.warning("Invalid move. You need to outflank an opponent's piece.")
         if st.session_state.online and current_player.color != st.session_state.online_color:
-            st.warning("Waiting for your opponent to make a move...")
             st.session_state.rerun = True
             st.rerun()
     else:
         st.warning("Waiting for opponent's move...")
+        if st.button("Restart/Exit Game"):
+            end_game()
         autoreset()
         game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
-            board_obj.state = game_data[0]
+            st.session_state.board_obj.state = game_data[0] # needs to be session_state (I don't know why)
             st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
             st.session_state.rerun = False
             st.rerun()
