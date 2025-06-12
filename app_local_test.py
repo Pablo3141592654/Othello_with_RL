@@ -99,9 +99,9 @@ def select_buttons():
         st.rerun()
     if st.button("Online"):
         board = Board().reset()
-        occupied = load_occupied() # load how many games/players are occupied/online # occupied[1] alternates between -1 and 1!!
+        occupied = load_occupied() # load how many games/players are occupied/online # occupied[1] alternates between -1 and 1!! # load_occupied creates a new game if needed
         st.session_state.game_id = occupied[0] # Get the first free game ID
-        game_data = load_game_state(st.session_state.game_id) # load_game_state creates a new game if needed
+        game_data = load_game_state(st.session_state.game_id)
         st.session_state.online_color = occupied[1] # if first in game, black, else red
         st.session_state.online = True
         st.session_state.page = "game"
@@ -147,7 +147,7 @@ def load_game_state(game_id):
     board = Board().reset()
     return board, 1
 
-def save_occupied(player, game_id): # (add, remove)
+def save_occupied(player, game_id): # (change, remove)
     doc_ref = db.collection("occupied").document("1")
     occupied_data = doc_ref.get()
     occupied_data = occupied_data.to_dict()
@@ -158,12 +158,12 @@ def save_occupied(player, game_id): # (add, remove)
     if game_id:
         games.remove(game_id)
     doc_ref.set({
-        'games': games,
-    })
+        'games': games
+    }, merge=True)
     if player:
         doc_ref.set({
-            'player': player,
-        }, merge=True)
+                'player': player
+            }, merge=True) # merge=True to update only the player field
     return
         
     
@@ -260,7 +260,7 @@ def main():
         st.write(f"### Current Turn: {'⚫' if current_player.color == 1 else '🔴'}")
         if st.session_state.online:
             st.write("Online mode, you are playing as " + ("⚫" if st.session_state.online_color == 1 else "🔴"))
-            board_obj.state = load_game_state(1)[0]  # Load game state from Firestore
+            board_obj.state = load_game_state(st.session_state.game_id)[0]  # Load game state from Firestore
         render_board(board_obj.state)
 
         # --- GAME OVER CHECK: If neither player can move, announce winner and stop ---
@@ -300,7 +300,7 @@ def main():
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                     current_player = st.session_state.players[st.session_state.current_player_idx] # update before saving the color in firebase
                     if st.session_state.online:
-                        save_game_state(board_obj.state, current_player.color, 1)  # Replace with actual game ID logic
+                        save_game_state(board_obj.state, current_player.color, st.session_state.game_id)
                     st.rerun()
                 else:
                     st.warning("Invalid move. You need to outflank an opponent's piece.")
@@ -310,8 +310,7 @@ def main():
             st.rerun()
     else:
         st.warning("Waiting for opponent's move...")
-        time.sleep(5)  # wait for opponent
-        game_data = load_game_state(1) # Id is only 1 for testing now
+        game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
             board_obj.state = game_data[0]
             st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
