@@ -127,7 +127,11 @@ def render_board(board):
     </script>
     """
 
-    components.html(full_html, height=600, scrolling=False)
+    doc_ref = db.collection("clicked_cell").document(str(1))
+    clicked_cell = doc_ref.get()
+
+    # Pass a key to enable Streamlit to capture the JS return value
+    return clicked_cell
 
 def select_buttons():
     st.title("Othello with RL")
