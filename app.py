@@ -137,7 +137,7 @@ def render_board(board):
                 label = "🔴"
             else:
                 label = "⠀"
-            html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
+            html += f'<div class="othello-cell" onclick="(() => sendClick({i}, {j}))()">{label}</div>'
 
     html += "</div>"
 
