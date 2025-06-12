@@ -2,7 +2,7 @@
 
 A modern, interactive Othello/Reversi game built with [Streamlit](https://streamlit.io/) for the web, featuring multiple play modes and a roadmap for advanced AI opponents—including a reinforcement learning (RL) agent.
 
-It is also online accesible under https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/
+It is also online accessible under https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/
 
 ---
 
