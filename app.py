@@ -170,10 +170,14 @@ def select_buttons():
 
     black_choice = st.selectbox("Black (⚫)", list(PLAYER_FACTORIES.keys()), key="black_player")
     red_choice = st.selectbox("Red (🔴)", list(PLAYER_FACTORIES.keys()), key="red_player")
+    black_choice = st.selectbox("Black (⚫)", list(PLAYER_FACTORIES.keys()), key="black_player")
+    red_choice = st.selectbox("Red (🔴)", list(PLAYER_FACTORIES.keys()), key="red_player")
 
     if st.button("Start Game"):
         st.session_state.page = "game"
         st.session_state.players = [
+            PLAYER_FACTORIES[black_choice](1),
+            PLAYER_FACTORIES[red_choice](-1)
             PLAYER_FACTORIES[black_choice](1),
             PLAYER_FACTORIES[red_choice](-1)
         ]
@@ -204,6 +208,126 @@ def select_buttons():
             st.session_state.counter += 1
             occupied = load_occupied() # This line crashed firebase!!!
         st.rerun()
+    if st.button("Online"):
+        board = Board().reset()
+        occupied = load_occupied() # load how many games/players are occupied/online # occupied[1] alternates between -1 and 1!! # load_occupied creates a new game if needed
+        st.session_state.game_id = occupied[0] # Get the first free game ID
+        game_data = load_game_state(st.session_state.game_id)
+        st.session_state.online_color = occupied[1] # if first in game, black, else red
+        st.session_state.online = True
+        st.session_state.page = "game"
+        save_occupied(occupied[1], None)
+
+        shown = False # to show warning only once
+        while occupied[1] != -1:
+            if not shown == True:    
+                st.warning("Waiting for an opponent to join...")
+                shown = True
+            time.sleep(5)
+            occupied = load_occupied()
+        st.rerun()
+
+def save_game_state(board, current_player, game_id):
+    # Flatten 2D board into a list of lists (Firestore doesn't support nested arrays beyond 1 level)
+    board_list = board.tolist()
+    if isinstance(board_list[0], list):
+        board_list = [cell for row in board_list for cell in row]  # Flatten to 1D list
+
+    game_data = {
+    'board': board_list,
+    'current_player': current_player,
+    'board_shape': board.shape  # Save shape to reconstruct later
+    }
+
+
+    doc_ref = db.collection("games").document(str(game_id))
+    doc_ref.set(game_data)
+    print(f"Saved game_data: {game_data}")
+
+def load_game_state(game_id):
+    doc_ref = db.collection("games").document(str(game_id))
+    game_data = doc_ref.get()
+    if game_data.exists:
+        data = game_data.to_dict()
+        shape = tuple(data.get('board_shape', (8, 8)))  # Default to 8x8 if shape is missing
+        board = np.array(data['board']).reshape(shape)
+        current_player = data['current_player']
+        return board, current_player
+
+    # Fallback: return a fresh board and default player
+    board = Board().reset()
+    return board, 1
+
+def save_occupied(player, game_id): # (change, remove)
+    doc_ref = db.collection("occupied").document("1")
+    occupied_data = doc_ref.get()
+    occupied_data = occupied_data.to_dict()
+
+    games = occupied_data["games"]
+    if player == -1:
+        games.append(st.session_state.game_id)
+    if game_id:
+        games.remove(game_id)
+    doc_ref.set({
+        'games': games
+    }, merge=True)
+    if player:
+        doc_ref.set({
+                'player': player
+            }, merge=True) # merge=True to update only the player field
+    return
+        
+    
+
+def load_occupied():
+    board_obj = Board()
+    board_obj.reset()
+
+    doc_ref = db.collection("occupied").document("1")
+    occupied_data = doc_ref.get()
+    occupied_data = occupied_data.to_dict()
+    counter = 1
+    game_id = 0
+    while game_id == 0:
+        if counter not in occupied_data["games"]: # if game_id is not occupied
+            game_id = counter
+        counter += 1
+
+    player = occupied_data["player"] * (-1) # chose not occupied player
+
+    game_doc_ref = db.collection("games").document(f"{game_id}") # check if game(game_id) exists
+    game_doc = game_doc_ref.get()
+
+    if not game_doc.exists: # if not create it
+        # Create a new game document if it doesn't exist
+        board_flat = np.zeros((8, 8), dtype=int).flatten().tolist()
+
+        game_doc_ref.set({
+            'board': board_flat,       # Now a flat array (list of 64 ints)
+            'current_player': 1,
+            'board_shape': [8, 8]      # Still store shape to rebuild
+        })
+        board_obj.reset() # initialize the new game - board
+        save_game_state(board_obj.state, 1, game_id)
+    return game_id, player
+
+def end_game():
+    board_obj = Board()
+    board_obj.reset()
+
+    board_obj.reset()  # Reset the board state
+    save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
+    save_occupied(None, st.session_state.game_id)  # Reset occupied state
+    st.session_state.clear()
+    st.rerun()
+
+def autoreset():
+    if "time" not in st.session_state:
+        st.session_state.time = time.time()
+    if time.time() - st.session_state.time > 300:  # Reset after 5min
+        st.warning("Game has been reset due to inactivity.")
+        end_game()
+
 
 def save_game_state(board, current_player, game_id):
     # Flatten 2D board into a list of lists (Firestore doesn't support nested arrays beyond 1 level)
@@ -399,12 +523,12 @@ def main():
         select_buttons()
         return
 
-    if "board_obj" not in st.session_state:
-        st.session_state.board_obj = Board()
-    board_obj = st.session_state.board_obj
+        if "board_obj" not in st.session_state:
+            st.session_state.board_obj = Board()
+        board_obj = st.session_state.board_obj
 
-    if "players" not in st.session_state:
-        st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
+        if "players" not in st.session_state:
+            st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
 
     if "current_player_idx" not in st.session_state:
         st.session_state.current_player_idx = 0
