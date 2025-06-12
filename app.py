@@ -329,7 +329,6 @@ def main():
             st.write("Online mode, you are playing as " + ("⚫" if st.session_state.online_color == 1 else "🔴"))
             board_obj.state = load_game_state(st.session_state.game_id)[0]  # Load game state from Firestore
         render_board(board_obj.state)
-        st.write(f"st.session_state.clicked_cell")
 
         # --- GAME OVER CHECK: If neither player can move, announce winner and stop ---
         if not board_obj.has_valid_move(current_player.color):
@@ -361,8 +360,9 @@ def main():
                     st.rerun()
 
         if not st.session_state.online or current_player.color == st.session_state.online_color:
-            if "clicked_cell" in st.session_state and isinstance(st.session_state.clicked_cell, list):
+            if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
                 i, j = st.session_state.clicked_cell
+                st.write(f"{i}, {j}")
                 st.session_state.clicked_cell = None
                 if board_obj.apply_move(current_player.color, i, j):
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
