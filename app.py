@@ -60,6 +60,7 @@ def render_board(board):
         "appId": st.secrets["firebase"]["appId"],
     }
     
+    # Firebase configuration JavaScript
     firebase_js_config = f"""
     const firebaseConfig = {{
         apiKey: "{firebase_config_for_js['apiKey']}",
@@ -71,6 +72,7 @@ def render_board(board):
     }};
     """
     
+    # HTML and JavaScript for rendering the board
     html = f"""
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -79,12 +81,18 @@ def render_board(board):
       firebase.initializeApp(firebaseConfig);
       
       const db = firebase.firestore();
-      function sendClick(i, j) {
-           console.log("Clicked cell:", i, j):
+      function sendClick(i, j) {{
+           console.log("Clicked cell:", i, j);
            db.collection("clicked_cell").doc("1").set({{
-               cell: `${{i}},${{j}}`,
+               cell: `${{i}},${{j}}`
+           }})
+           .then(() => {{
+               console.log("Document successfully written!");
+           }})
+           .catch((error) => {{
+               console.error("Error writing document: ", error);
            }});
-       }
+      }}
     </script>
 
     <style>
@@ -113,6 +121,7 @@ def render_board(board):
     <div class="othello-grid">
     """
 
+    # Generate the board cells
     for i in range(8):
         for j in range(8):
             cell = board[i][j]
