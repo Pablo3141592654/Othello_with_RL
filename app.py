@@ -129,10 +129,12 @@ def render_board(board):
 
     doc_ref = db.collection("clicked").document(str(1))
     clicked = doc_ref.get()
+    if clicked.exists:
+        data = clicked.to_dict()
 
     components.html(full_html, height=600, scrolling=False)
-    st.write(f"clicked on {clicked}")
-    return clicked
+    st.write(f"clicked on {data["cell"}")
+    return data["cell"]
 
 def select_buttons():
     st.title("Othello with RL")
