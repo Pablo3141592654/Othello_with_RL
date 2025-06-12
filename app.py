@@ -114,7 +114,7 @@ def render_board(board):
 
         function sendClick(i, j) {{
             console.log("Clicked cell:", i, j);
-            db.collection("clicked_cell").doc("1").set({{
+            db.collection("clicked").doc("1").set({{
                 cell: `${{i}},${{j}}`
             }})
             .then(() => {{
@@ -127,11 +127,11 @@ def render_board(board):
     </script>
     """
 
-    doc_ref = db.collection("clicked_cell").document(str(1))
-    clicked_cell = doc_ref.get()
+    doc_ref = db.collection("clicked").document(str(1))
+    clicked = doc_ref.get()
 
     # Pass a key to enable Streamlit to capture the JS return value
-    return clicked_cell
+    return clicked
 
 def select_buttons():
     st.title("Othello with RL")
