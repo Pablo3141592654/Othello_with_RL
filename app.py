@@ -49,58 +49,30 @@ PLAYER_FACTORIES = {
 }
 
 def render_board(board):
-    # Client-side Firebase configuration
-    firebase_config_for_js = {
-        "apiKey": st.secrets["firebase"]["apiKey"],
-        "authDomain": st.secrets["firebase"]["authDomain"],
-        "projectId": st.secrets["firebase"]["project_id"],
-        "storageBucket": st.secrets["firebase"]["storageBucket"],
-        "messagingSenderId": st.secrets["firebase"]["messagingSenderId"],
-        "appId": st.secrets["firebase"]["appId"],
-    }
+    config = st.secrets["firebase"]
     
-    # Firebase configuration JavaScript
     firebase_js_config = f"""
     const firebaseConfig = {{
-        apiKey: "{firebase_config_for_js['apiKey']}",
-        authDomain: "{firebase_config_for_js['authDomain']}",
-        projectId: "{firebase_config_for_js['projectId']}",
-        storageBucket: "{firebase_config_for_js['storageBucket']}",
-        messagingSenderId: "{firebase_config_for_js['messagingSenderId']}",
-        appId: "{firebase_config_for_js['appId']}",
+        apiKey: "{config['apiKey']}",
+        authDomain: "{config['authDomain']}",
+        projectId: "{config['project_id']}",
+        storageBucket: "{config['storageBucket']}",
+        messagingSenderId: "{config['messagingSenderId']}",
+        appId: "{config['appId']}"
     }};
     """
     
-    # HTML and JavaScript for rendering the board
-    html = f"""
+    board_html = ""
+    for i in range(8):
+        for j in range(8):
+            cell = board[i][j]
+            label = "⚫" if cell == 1 else "🔴" if cell == -1 else "⠀"
+            board_html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
+    
+    full_html = f"""
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-    console.log("TEST");
-    <script>
-     {firebase_js_config}
-     if (!firebase.apps.length) {{
-         firebase.initializeApp(firebaseConfig);
-     }} else {{
-         firebase.app(); // Use the existing app
-     }}
-     
-     const db = firebase.firestore();
-     console.log("TEST");
-     function sendClick(i, j) {{
-         console.log("Clicked cell:", i, j);
-         db.collection("clicked_cell").doc("1").set({{
-             cell: `${{i}},${{j}}`
-         }})
-         .then(() => {{
-             console.log("Document successfully written!");
-         }})
-         .catch((error) => {{
-             console.error("Error writing document: ", error);
-         }});
-     }}
-   </script>
 
-    html = """
     <style>
         .othello-grid {{
             display: grid;
@@ -124,47 +96,37 @@ def render_board(board):
             margin: 0;
         }}
     </style>
+
     <div class="othello-grid">
-    """
-    
-    # Generate the board cells
-    for i in range(8):
-        for j in range(8):
-            cell = board[i][j]
-            if cell == 1:
-                label = "⚫"
-            elif cell == -1:
-                label = "🔴"
-            else:
-                label = "⠀"
-            
-            # Append the cell HTML to the string
-            html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
-    
-    html += "</div>"
-    
-    # Add the JavaScript function to handle clicks
-    html += """
+        {board_html}
+    </div>
+
     <script>
-        function sendClick(i, j) {
+        {firebase_js_config}
+        if (!firebase.apps.length) {{
+            firebase.initializeApp(firebaseConfig);
+        }} else {{
+            firebase.app();
+        }}
+
+        const db = firebase.firestore();
+
+        function sendClick(i, j) {{
             console.log("Clicked cell:", i, j);
-            // Add your logic here (e.g., update the game state)
-        }
+            db.collection("clicked_cell").doc("1").set({{
+                cell: `${{i}},${{j}}`
+            }})
+            .then(() => {{
+                console.log("Cell click recorded.");
+            }})
+            .catch((error) => {{
+                console.error("Error writing document: ", error);
+            }});
+        }}
     </script>
     """
-    
-    
-    components.html(html, height=600, scrolling=False)
 
-    # Render the HTML in Streamlit
-    st.markdown(html, unsafe_allow_html=True)
-
-    # Fetch the clicked cell from Firestore (if needed)
-    doc_ref = db.collection("clicked_cell").document(str(1))
-    clicked_cell = doc_ref.get()
-
-    return clicked_cell
-
+    components.html(full_html, height=600, scrolling=False)
 
 def select_buttons():
     st.title("Othello with RL")
