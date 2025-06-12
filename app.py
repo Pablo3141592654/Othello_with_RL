@@ -81,9 +81,9 @@ def render_board(board):
       const db = firebase.firestore();
       function sendClick(i, j) {
            console.log("Clicked cell:", i, j):
-           db.collection("clicked_cell").doc("1").set({
+           db.collection("clicked_cell").doc("1").set({{
                cell: `${{i}},${{j}}`,
-           });
+           }});
        }
     </script>
 
