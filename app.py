@@ -126,16 +126,17 @@ def render_board(board):
         }}
     </script>
     """
-
+    components.html(full_html, height=600, scrolling=False)
+    
     doc_ref = db.collection("clicked").document("1")
     clicked = doc_ref.get()
-    
-    components.html(full_html, height=600, scrolling=False)
     
     if clicked.exists:
         data = clicked.to_dict()
         st.write(f"Clicked on {data['cell']}")
         st.session_state.clicked_cell = data["cell"]
+        reset_clicked_cell()
+        st.rerun()
     else:
         st.write("No cell clicked yet.")
     return
@@ -259,6 +260,12 @@ def load_occupied():
         save_game_state(board_obj.state, 1, game_id)
     return game_id, player
 
+def reset_clicked_cell():
+    doc_ref = db.collection("clicked_cell").document("1")
+    doc_ref.set({
+        "cell": None
+    })
+
 def end_game():
     board_obj = Board()
     board_obj.reset()
@@ -362,7 +369,6 @@ def main():
                     st.warning("No valid moves for AI. Passing turn.")
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                     st.rerun()
-        st.write("Test")
 
         if not st.session_state.online or current_player.color == st.session_state.online_color:
             if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
@@ -370,7 +376,6 @@ def main():
                 i, j = int(i_str), int(j_str)
                 st.write(f"clicked on cell {i}, {j}")
                 st.session_state.clicked_cell = None
-                st.write("TEST")
                 if board_obj.apply_move(current_player.color, i, j):
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                     current_player = st.session_state.players[st.session_state.current_player_idx] # update before saving the color in firebase
