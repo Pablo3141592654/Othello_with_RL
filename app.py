@@ -384,6 +384,7 @@ def main():
                     if st.session_state != None:
                         st.warning("Invalid move. You need to outflank an opponent's piece.")
                         st.rerun()
+                    autoreset()
                     st.rerun()
         if st.session_state.online and current_player.color != st.session_state.online_color:
             st.session_state.rerun = True
