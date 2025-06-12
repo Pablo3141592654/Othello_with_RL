@@ -48,7 +48,6 @@ PLAYER_FACTORIES = {
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
 }
 
-
 def render_board(board):
     # Client-side Firebase configuration
     firebase_config_for_js = {
@@ -101,32 +100,33 @@ def render_board(board):
      }}
    </script>
 
+    html = """
     <style>
-      .othello-grid {{
-          display: grid;
-          grid-template-columns: repeat(8, 1fr);
-          gap: 2px;
-          max-width: 90vw;
-          margin: auto;
-      }}
-      .othello-cell {{
-          width: 100%;
-          aspect-ratio: 1 / 1;
-          background: #116611;
-          color: white;
-          font-size: min(8vw, 36px);
-          border: 1px solid #222;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          cursor: pointer;
-          padding: 0;
-          margin: 0;
-      }}
+        .othello-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            max-width: 90vw;
+            margin: auto;
+        }
+        .othello-cell {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #116611;
+            color: white;
+            font-size: min(8vw, 36px);
+            border: 1px solid #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
     </style>
     <div class="othello-grid">
     """
-
+    
     # Generate the board cells
     for i in range(8):
         for j in range(8):
@@ -137,11 +137,24 @@ def render_board(board):
                 label = "🔴"
             else:
                 label = "⠀"
-            <div className="othello-cell" onClick={() => sendClick(i, j)}>
-              {label}
-            </div>
-
+            
+            # Append the cell HTML to the string
+            html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
+    
     html += "</div>"
+    
+    # Add the JavaScript function to handle clicks
+    html += """
+    <script>
+        function sendClick(i, j) {
+            console.log("Clicked cell:", i, j);
+            // Add your logic here (e.g., update the game state)
+        }
+    </script>
+    """
+    
+    
+    components.html(html, height=600, scrolling=False)
 
     # Render the HTML in Streamlit
     st.markdown(html, unsafe_allow_html=True)
