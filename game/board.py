@@ -62,6 +62,7 @@ class Board:
         if new_state is not False:
             self.state = new_state
             return True
+        st.write("TEST")
         return False
 
     def get_valid_moves(self, player):
