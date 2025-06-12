@@ -114,14 +114,21 @@ def select_buttons():
         st.rerun()
     if st.button("Online"):
         board = Board().reset()
-        game_data = load_game_state(1)
-        st.session_state.online_color = game_data[1]  # Set online color based on loaded game state
+        occupied = load_occupied() # load how many games/players are occupied/online # occupied[1] alternates between -1 and 1!! # load_occupied creates a new game if needed
+        st.session_state.game_id = occupied[0] # Get the first free game ID
+        game_data = load_game_state(st.session_state.game_id)
+        st.session_state.online_color = occupied[1] # if first in game, black, else red
         st.session_state.online = True
         st.session_state.page = "game"
-        st.session_state.players = [
-            HumanPlayer(game_data[1]),  # Player color based on loaded game state
-            HumanPlayer(-game_data[1])  # Opponent color is the opposite
-        ]
+        save_occupied(occupied[1], None)
+
+        shown = False # to show warning only once
+        while occupied[1] != -1:
+            if not shown == True:    
+                st.warning("Waiting for an opponent to join...")
+                shown = True
+            time.sleep(5)
+            occupied = load_occupied()
         st.rerun()
 
 def save_game_state(board, current_player, game_id):
@@ -154,6 +161,76 @@ def load_game_state(game_id):
     # Fallback: return a fresh board and default player
     board = Board().reset()
     return board, 1
+
+def save_occupied(player, game_id): # (change, remove)
+    doc_ref = db.collection("occupied").document("1")
+    occupied_data = doc_ref.get()
+    occupied_data = occupied_data.to_dict()
+
+    games = occupied_data["games"]
+    if player == -1:
+        games.append(st.session_state.game_id)
+    if game_id:
+        games.remove(game_id)
+    doc_ref.set({
+        'games': games
+    }, merge=True)
+    if player:
+        doc_ref.set({
+                'player': player
+            }, merge=True) # merge=True to update only the player field
+    return
+        
+    
+
+def load_occupied():
+    board_obj = Board()
+    board_obj.reset()
+
+    doc_ref = db.collection("occupied").document("1")
+    occupied_data = doc_ref.get()
+    occupied_data = occupied_data.to_dict()
+    counter = 1
+    game_id = 0
+    while game_id == 0:
+        if counter not in occupied_data["games"]: # if game_id is not occupied
+            game_id = counter
+        counter += 1
+
+    player = occupied_data["player"] * (-1) # chose not occupied player
+
+    game_doc_ref = db.collection("games").document(f"{game_id}") # check if game(game_id) exists
+    game_doc = game_doc_ref.get()
+
+    if not game_doc.exists: # if not create it
+        # Create a new game document if it doesn't exist
+        board_flat = np.zeros((8, 8), dtype=int).flatten().tolist()
+
+        game_doc_ref.set({
+            'board': board_flat,       # Now a flat array (list of 64 ints)
+            'current_player': 1,
+            'board_shape': [8, 8]      # Still store shape to rebuild
+        })
+        board_obj.reset() # initialize the new game - board
+        save_game_state(board_obj.state, 1, game_id)
+    return game_id, player
+
+def end_game():
+    board_obj = Board()
+    board_obj.reset()
+
+    board_obj.reset()  # Reset the board state
+    save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
+    save_occupied(None, st.session_state.game_id)  # Reset occupied state
+    st.session_state.clear()
+    st.stop()
+
+def autoreset():
+    if "time" not in st.session_state:
+        st.session_state.time = time.time()
+    if time.time() - st.session_state.time > 300:  # Reset after 5min
+        end_game()
+
 
 def main():
     # Add this at the top of main()
@@ -197,18 +274,15 @@ def main():
         board = board_obj.state
 
         st.title("Othello Game")
-        if st.button("Restart Game"):
-            board_obj.reset()  # Reset the board state
-            save_game_state(board_obj.state, 1, 1)  # TODO Replace with actual game ID logic
-            st.session_state.clear()
-            st.rerun()
+        if st.button("Restart/Exit Game"):
+            end_game() # session_state, firebase, etc.
 
         black_count, red_count = board_obj.count_pieces()
         st.write(f"**⚫ Black: {black_count}** | **🔴 Red: {red_count}**")
         st.write(f"### Current Turn: {'⚫' if current_player.color == 1 else '🔴'}")
         if st.session_state.online:
             st.write("Online mode, you are playing as " + ("⚫" if st.session_state.online_color == 1 else "🔴"))
-            board_obj.state = load_game_state(1)[0]  # Load game state from Firestore
+            board_obj.state = load_game_state(st.session_state.game_id)[0]  # Load game state from Firestore
         render_board(board_obj.state)
 
         # --- GAME OVER CHECK: If neither player can move, announce winner and stop ---
@@ -220,11 +294,7 @@ def main():
                     st.success("Game ended. 🔴 Red won!")
                 else:
                     st.info("Game ended. It's a draw!")
-                st.write("Game ended. Please close the tab or restart the game.")
-                st.session_state.clear()
-                board_obj.reset()  # Reset the board state
-                save_game_state(board_obj.state, 1, 1)  # Replace with actual game ID logic
-                st.stop()
+                end_game() # session_state, firebase, etc.
             else:
                 st.info(f"No valid moves for {'⚫' if current_player.color == 1 else '🔴'}. Passing turn.")
                 st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
@@ -252,7 +322,7 @@ def main():
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                     current_player = st.session_state.players[st.session_state.current_player_idx] # update before saving the color in firebase
                     if st.session_state.online:
-                        save_game_state(board_obj.state, current_player.color, 1)  # Replace with actual game ID logic
+                        save_game_state(board_obj.state, current_player.color, st.session_state.game_id)
                     st.rerun()
                 else:
                     st.warning("Invalid move. You need to outflank an opponent's piece.")
@@ -262,8 +332,8 @@ def main():
             st.rerun()
     else:
         st.warning("Waiting for opponent's move...")
-        time.sleep(5)  # wait for opponent
-        game_data = load_game_state(1) # Id is only 1 for testing now
+        autoreset()
+        game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
             board_obj.state = game_data[0]
             st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
