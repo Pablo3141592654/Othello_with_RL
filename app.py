@@ -262,7 +262,7 @@ def load_occupied():
 def reset_clicked_cell():
     doc_ref = db.collection("clicked_cell").document("1")
     doc_ref.set({
-        "cell": -1, 0
+        "cell": [-1, 0]
     })
 
 def end_game():
