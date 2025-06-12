@@ -49,12 +49,15 @@ PLAYER_FACTORIES = {
 def render_board(board):
     st.markdown("""
         <style>
+        /* Outer board container */
         .othello-board-bg {
             background: #116611;
             padding: 8px;
             border-radius: 8px;
             display: inline-block;
         }
+
+        /* Remove column padding to get tight grid */
         div[data-testid="stHorizontalBlock"] {
             gap: 0 !important;
         }
@@ -62,12 +65,16 @@ def render_board(board):
             padding: 0 !important;
             margin: 0 !important;
         }
+
+        /* Make buttons responsive using vw for mobile sizing */
         button[kind="secondary"] {
-            min-width: 56px !important;
-            min-height: 56px !important;
-            width: 56px !important;
-            height: 56px !important;
-            font-size: 3.2rem !important;
+            width: 10vw !important;
+            height: 10vw !important;
+            max-width: 56px !important;
+            max-height: 56px !important;
+            font-size: 6vw !important;
+            min-width: 36px !important;
+            min-height: 36px !important;
             margin: 0 !important;
             padding: 0 !important;
             border-radius: 0 !important;
@@ -78,12 +85,17 @@ def render_board(board):
             align-items: center !important;
             justify-content: center !important;
         }
+
+        /* Prevent overflow on small screens */
+        .block-container {
+            overflow-x: auto;
+        }
         </style>
     """, unsafe_allow_html=True)
 
     st.markdown('<div class="othello-board-bg">', unsafe_allow_html=True)
     for i in range(8):
-        cols = st.columns(8, gap="small")  # gap will be overridden by CSS
+        cols = st.columns(8, gap="small")
         for j in range(8):
             cell = board[i][j]
             if cell == 1:
@@ -95,6 +107,7 @@ def render_board(board):
             if cols[j].button(label, key=f"{i}-{j}"):
                 st.session_state.clicked_cell = (i, j)
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 def select_buttons():
     st.title("Othello with RL")
