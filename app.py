@@ -136,7 +136,6 @@ def render_board(board):
         st.write(f"Clicked on {data['cell']}")
         st.session_state.clicked_cell = data["cell"]
         reset_clicked_cell()
-        st.rerun()
     else:
         st.write("No cell clicked yet.")
     return
