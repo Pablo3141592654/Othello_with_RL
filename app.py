@@ -47,31 +47,34 @@ PLAYER_FACTORIES = {
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
 }
 def render_board(board):
-    st.markdown("""
-        <style>
-        .board-wrapper {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 2px;
-            max-width: 90vw;
-            margin: 0 auto;
-        }
-        .board-cell button {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            font-size: min(8vw, 36px);
-            background: #116611;
-            color: white;
-            border: 1px solid #333;
-            border-radius: 0;
-        }
-        .board-cell {
-            width: 100%;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    import streamlit.components.v1 as components
 
-    st.markdown('<div class="board-wrapper">', unsafe_allow_html=True)
+    html = """
+    <style>
+    .othello-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 2px;
+        max-width: 90vw;
+        margin: auto;
+    }
+    .othello-grid form {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+    }
+    .othello-grid button {
+        width: 100%;
+        height: 100%;
+        font-size: min(8vw, 36px);
+        background: #116611;
+        color: white;
+        border: 1px solid #222;
+        padding: 0;
+        margin: 0;
+    }
+    </style>
+    <div class="othello-grid">
+    """
 
     for i in range(8):
         for j in range(8):
@@ -81,13 +84,19 @@ def render_board(board):
             elif cell == -1:
                 label = "🔴"
             else:
-                label = "⠀"  # blank space (not empty string or it will collapse)
-            st.markdown(f'<div class="board-cell">', unsafe_allow_html=True)
-            if st.button(label, key=f"{i}-{j}"):
-                st.session_state.clicked_cell = (i, j)
-            st.markdown(f'</div>', unsafe_allow_html=True)
+                label = "⠀"  # non-breaking blank
 
-    st.markdown('</div>', unsafe_allow_html=True)
+            # Form for each button
+            html += f"""
+            <form action="" method="post">
+                <input type="hidden" name="clicked_cell" value="{i},{j}" />
+                <button type="submit">{label}</button>
+            </form>
+            """
+
+    html += "</div>"
+
+    components.html(html, height=600, scrolling=False)
 
 def select_buttons():
     st.title("Othello with RL")
