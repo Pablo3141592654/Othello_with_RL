@@ -346,7 +346,7 @@ def main():
                 st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                 st.rerun()
 
-        if not st.session_state.online:  # Only handle AI moves if not online
+        if not st.session_state.online and (st.session_state.players[0] is not HumanPlayer or st.session_state.players[1] is not HumanPlayer):  # Only handle AI moves if not online
             # AI move handling
             if not isinstance(current_player, HumanPlayer): # And not online
                 time.sleep(st.session_state.ai_think_time)
