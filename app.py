@@ -46,56 +46,78 @@ PLAYER_FACTORIES = {
     ]),
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
 }
+
 def render_board(board):
-    st.markdown("""
-        <style>
-        /* Outer board container */
-        .othello-board-bg {
-            background: #116611;
-            padding: 8px;
-            border-radius: 8px;
-            display: inline-block;
-        }
+    firebase_config_for_js = {
+        "apiKey": st.secrets["firebase"]["apiKey"],
+        "authDomain": st.secrets["firebase"]["authDomain"],
+        "projectId": st.secrets["firebase"]["project_id"],
+        "storageBucket": st.secrets["firebase"]["storageBucket"],
+        "messagingSenderId": st.secrets["firebase"]["messagingSenderId"],
+        "appId": st.secrets["firebase"]["appId"],
+    }
+    
+    firebase_js_config = f"""
+    const firebaseConfig = {{
+        apiKey: "{firebase_config_for_js['apiKey']}",
+        authDomain: "{firebase_config_for_js['authDomain']}",
+        projectId: "{firebase_config_for_js['projectId']}",
+        storageBucket: "{firebase_config_for_js['storageBucket']}",
+        messagingSenderId: "{firebase_config_for_js['messagingSenderId']}",
+        appId: "{firebase_config_for_js['appId']}",
+    }};
+    """
+    
+    html = f"""
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script>
+      {firebase_js_config}
+      firebase.initializeApp(firebaseConfig);
+      
+      const db = firebase.firestore();
+      function sendClick(i, j) {{
+          console.log("Clicked cell:", i, j);
+          db.collection("clicked_cell").doc("1").set({{
+            cell: `${{i}},${{j}}`,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }}).then(() => {{
+                console.log("Document successfully written!");
+            }}).catch((error) => {{
+                console.error("Error writing document: ", error);
+            }});
+        }}
+    </script>
 
-        /* Remove column padding to get tight grid */
-        div[data-testid="stHorizontalBlock"] {
-            gap: 0 !important;
-        }
-        div[data-testid="column"] {
-            padding: 0 !important;
-            margin: 0 !important;
-        }
 
-        /* Make buttons responsive using vw for mobile sizing */
-        button[kind="secondary"] {
-            width: 10vw !important;
-            height: 10vw !important;
-            max-width: 56px !important;
-            max-height: 56px !important;
-            font-size: 6vw !important;
-            min-width: 36px !important;
-            min-height: 36px !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border-radius: 0 !important;
-            border: 1.5px solid #222 !important;
-            background: transparent !important;
-            line-height: 1 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
 
-        /* Prevent overflow on small screens */
-        .block-container {
-            overflow-x: auto;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    <style>
+    .othello-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 2px;
+        max-width: 90vw;
+        margin: auto;
+    }
+    .othello-cell {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        background: #116611;
+        color: white;
+        font-size: min(8vw, 36px);
+        border: 1px solid #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+    }
+    </style>
+    <div class="othello-grid">
+    """
 
-    st.markdown('<div class="othello-board-bg">', unsafe_allow_html=True)
     for i in range(8):
-        cols = st.columns(8, gap="small")
         for j in range(8):
             cell = board[i][j]
             if cell == 1:
@@ -103,10 +125,16 @@ def render_board(board):
             elif cell == -1:
                 label = "🔴"
             else:
-                label = ""
-            if cols[j].button(label, key=f"{i}-{j}"):
-                st.session_state.clicked_cell = (i, j)
-    st.markdown('</div>', unsafe_allow_html=True)
+                label = "⠀"
+            html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
+
+    html += "</div>"
+
+    doc_ref = db.collection("clicked_cell").document(str(1))
+    clicked_cell = doc_ref.get()
+
+    # Pass a key to enable Streamlit to capture the JS return value
+    return clicked_cell
 
 
 def select_buttons():
@@ -274,8 +302,6 @@ def main():
         if "board_obj" not in st.session_state:
             st.session_state.board_obj = Board()
         board_obj = st.session_state.board_obj
-
-        st.write("Test")
 
         if "players" not in st.session_state:
             st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
