@@ -225,6 +225,13 @@ def end_game():
     st.session_state.clear()
     st.stop()
 
+def autoreset():
+    if "time" not in st.session_state:
+        st.session_state.time = time.time()
+    if time.time() - st.session_state.time > 300:  # Reset after 5min
+        end_game()
+
+
 def main():
     # Add this at the top of main()
     ai_think_time = st.sidebar.slider(
@@ -325,6 +332,7 @@ def main():
             st.rerun()
     else:
         st.warning("Waiting for opponent's move...")
+        autoreset()
         game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
             board_obj.state = game_data[0]
