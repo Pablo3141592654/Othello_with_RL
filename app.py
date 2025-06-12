@@ -131,6 +131,7 @@ def render_board(board):
     clicked = doc_ref.get()
 
     components.html(full_html, height=600, scrolling=False)
+    st.write(f"clicked on {clicked}")
     return clicked
 
 def select_buttons():
