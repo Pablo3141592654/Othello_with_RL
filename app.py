@@ -48,6 +48,8 @@ PLAYER_FACTORIES = {
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
 }
 
+import streamlit as st
+
 def render_board(board):
     # Client-side Firebase configuration
     firebase_config_for_js = {
@@ -91,17 +93,15 @@ def render_board(board):
         }}
     </script>
 
-
-
     <style>
-      .othello-grid {
+      .othello-grid {{
           display: grid;
           grid-template-columns: repeat(8, 1fr);
           gap: 2px;
           max-width: 90vw;
           margin: auto;
-      }
-      .othello-cell {
+      }}
+      .othello-cell {{
           width: 100%;
           aspect-ratio: 1 / 1;
           background: #116611;
@@ -114,7 +114,7 @@ def render_board(board):
           cursor: pointer;
           padding: 0;
           margin: 0;
-      }
+      }}
     </style>
     <div class="othello-grid">
     """
@@ -132,10 +132,13 @@ def render_board(board):
 
     html += "</div>"
 
+    # Render the HTML in Streamlit
+    st.markdown(html, unsafe_allow_html=True)
+
+    # Fetch the clicked cell from Firestore (if needed)
     doc_ref = db.collection("clicked_cell").document(str(1))
     clicked_cell = doc_ref.get()
 
-    # Pass a key to enable Streamlit to capture the JS return value
     return clicked_cell
 
 
