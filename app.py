@@ -102,14 +102,14 @@ def render_board(board):
 
     html = """
     <style>
-        .othello-grid {
+        .othello-grid {{
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             gap: 2px;
             max-width: 90vw;
             margin: auto;
-        }
-        .othello-cell {
+        }}
+        .othello-cell {{
             width: 100%;
             aspect-ratio: 1 / 1;
             background: #116611;
@@ -122,7 +122,7 @@ def render_board(board):
             cursor: pointer;
             padding: 0;
             margin: 0;
-        }
+        }}
     </style>
     <div class="othello-grid">
     """
