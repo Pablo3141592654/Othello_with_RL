@@ -262,7 +262,7 @@ def load_occupied():
 def reset_clicked_cell():
     doc_ref = db.collection("clicked_cell").document("1")
     doc_ref.set({
-        "cell": [-1, 0]
+        "cell": None
     })
 
 def end_game():
@@ -376,7 +376,6 @@ def main():
                 i_str, j_str = st.session_state.clicked_cell.split(",")
                 i, j = int(i_str), int(j_str)
                 st.write(f"clicked on cell {i}, {j}")
-                st.session_state.clicked_cell = None
                 if board_obj.apply_move(current_player.color, i, j):
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                     current_player = st.session_state.players[st.session_state.current_player_idx] # update before saving the color in firebase
@@ -385,7 +384,7 @@ def main():
                     st.write("move_applied")
                     st.rerun()
                 else:
-                    if i != -1:
+                    if st.session_state != None:
                         st.warning("Invalid move. You need to outflank an opponent's piece.")
                         st.rerun()
                     st.rerun()
