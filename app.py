@@ -92,27 +92,27 @@ def render_board(board):
 
 
     <style>
-    .othello-grid {
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: 2px;
-        max-width: 90vw;
-        margin: auto;
-    }
-    .othello-cell {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        background: #116611;
-        color: white;
-        font-size: min(8vw, 36px);
-        border: 1px solid #222;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        padding: 0;
-        margin: 0;
-    }
+      .othello-grid {
+          display: grid;
+          grid-template-columns: repeat(8, 1fr);
+          gap: 2px;
+          max-width: 90vw;
+          margin: auto;
+      }
+      .othello-cell {
+          width: 100%;
+          aspect-ratio: 1 / 1;
+          background: #116611;
+          color: white;
+          font-size: min(8vw, 36px);
+          border: 1px solid #222;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          padding: 0;
+          margin: 0;
+      }
     </style>
     <div class="othello-grid">
     """
