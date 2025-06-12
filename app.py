@@ -76,6 +76,7 @@ def render_board(board):
     html = f"""
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    console.log("TEST");
     <script>
      {firebase_js_config}
      if (!firebase.apps.length) {{
@@ -85,6 +86,7 @@ def render_board(board):
      }}
      
      const db = firebase.firestore();
+     console.log("TEST");
      function sendClick(i, j) {{
          console.log("Clicked cell:", i, j);
          db.collection("clicked_cell").doc("1").set({{
