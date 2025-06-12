@@ -130,7 +130,7 @@ def render_board(board):
     doc_ref = db.collection("clicked").document(str(1))
     clicked = doc_ref.get()
 
-    # Pass a key to enable Streamlit to capture the JS return value
+    components.html(full_html, height=600, scrolling=False)
     return clicked
 
 def select_buttons():
