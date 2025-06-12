@@ -133,7 +133,7 @@ def render_board(board):
         data = clicked.to_dict()
 
     components.html(full_html, height=600, scrolling=False)
-    st.write(f"clicked on {data["cell"}")
+    st.write(f"clicked on {data["cell"]}")
     return data["cell"]
 
 def select_buttons():
