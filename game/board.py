@@ -58,6 +58,7 @@ class Board:
         return black_count, red_count
 
     def apply_move(self, player, row, col):
+        st.write("TEST")
         new_state = self.is_legal_move(player, row, col)
         if new_state is not False:
             self.state = new_state
