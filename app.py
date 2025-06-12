@@ -48,7 +48,6 @@ PLAYER_FACTORIES = {
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
 }
 
-import streamlit as st
 
 def render_board(board):
     # Client-side Firebase configuration
@@ -80,17 +79,12 @@ def render_board(board):
       firebase.initializeApp(firebaseConfig);
       
       const db = firebase.firestore();
-      function sendClick(i, j) {{
-          console.log("Clicked cell:", i, j);
-          db.collection("clicked_cell").doc("1").set({{
-            cell: `${{i}},${{j}}`,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }}).then(() => {{
-                console.log("Document successfully written!");
-            }}).catch((error) => {{
-                console.error("Error writing document: ", error);
-            }});
-        }}
+      function sendClick(i, j) {
+           console.log("Clicked cell:", i, j);
+           db.collection("clicked_cell").doc("1").set({
+               cell: `${i},${j}`,
+           })
+       }
     </script>
 
     <style>
