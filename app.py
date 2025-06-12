@@ -46,32 +46,73 @@ PLAYER_FACTORIES = {
     ]),
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
 }
-def render_board(board):
-    import streamlit.components.v1 as components
 
-    html = """
+def render_board(board):
+    firebase_config_for_js = {
+        "apiKey": st.secrets["firebase"]["apiKey"],
+        "authDomain": st.secrets["firebase"]["authDomain"],
+        "projectId": st.secrets["firebase"]["project_id"],
+        "storageBucket": st.secrets["firebase"]["storageBucket"],
+        "messagingSenderId": st.secrets["firebase"]["messagingSenderId"],
+        "appId": st.secrets["firebase"]["appId"],
+    }
+    
+    firebase_js_config = f"""
+    const firebaseConfig = {{
+        apiKey: "{firebase_config_for_js['apiKey']}",
+        authDomain: "{firebase_config_for_js['authDomain']}",
+        projectId: "{firebase_config_for_js['projectId']}",
+        storageBucket: "{firebase_config_for_js['storageBucket']}",
+        messagingSenderId: "{firebase_config_for_js['messagingSenderId']}",
+        appId: "{firebase_config_for_js['appId']}",
+    }};
+    """
+    
+    html = f"""
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script>
+      {firebase_js_config}
+      firebase.initializeApp(firebaseConfig);
+      
+      const db = firebase.firestore();
+      function sendClick(i, j) {{
+          console.log("Clicked cell:", i, j);
+          db.collection("clicked_cell").doc("1").set({{
+            cell: `${{i}},${{j}}`,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }}).then(() => {{
+                console.log("Document successfully written!");
+            }}).catch((error) => {{
+                console.error("Error writing document: ", error);
+            }});
+        }}
+    </script>
+
+
+
     <style>
-    .othello-grid {
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: 2px;
-        max-width: 90vw;
-        margin: auto;
-    }
-    .othello-grid form {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-    }
-    .othello-grid button {
-        width: 100%;
-        height: 100%;
-        font-size: min(8vw, 36px);
-        background: #116611;
-        color: white;
-        border: 1px solid #222;
-        padding: 0;
-        margin: 0;
-    }
+      .othello-grid {
+          display: grid;
+          grid-template-columns: repeat(8, 1fr);
+          gap: 2px;
+          max-width: 90vw;
+          margin: auto;
+      }
+      .othello-cell {
+          width: 100%;
+          aspect-ratio: 1 / 1;
+          background: #116611;
+          color: white;
+          font-size: min(8vw, 36px);
+          border: 1px solid #222;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          padding: 0;
+          margin: 0;
+      }
     </style>
     <div class="othello-grid">
     """
@@ -84,19 +125,17 @@ def render_board(board):
             elif cell == -1:
                 label = "🔴"
             else:
-                label = "⠀"  # non-breaking blank
-
-            # Form for each button
-            html += f"""
-            <form action="" method="post">
-                <input type="hidden" name="clicked_cell" value="{i},{j}" />
-                <button type="submit">{label}</button>
-            </form>
-            """
+                label = "⠀"
+            html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
 
     html += "</div>"
 
-    components.html(html, height=600, scrolling=False)
+    doc_ref = db.collection("clicked_cell").document(str(1))
+    clicked_cell = doc_ref.get()
+
+    # Pass a key to enable Streamlit to capture the JS return value
+    return clicked_cell
+
 
 def select_buttons():
     st.title("Othello with RL")
@@ -263,8 +302,6 @@ def main():
         if "board_obj" not in st.session_state:
             st.session_state.board_obj = Board()
         board_obj = st.session_state.board_obj
-
-        st.write("Test")
 
         if "players" not in st.session_state:
             st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
