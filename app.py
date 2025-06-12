@@ -262,7 +262,7 @@ def load_occupied():
 def reset_clicked_cell():
     doc_ref = db.collection("clicked_cell").document("1")
     doc_ref.set({
-        "cell": None
+        "cell": -1, 0
     })
 
 def end_game():
@@ -270,8 +270,10 @@ def end_game():
     board_obj.reset()
 
     board_obj.reset()  # Reset the board state
-    save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
-    save_occupied(None, st.session_state.game_id)  # Reset occupied state
+    if st.session_state.online:
+        save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
+        save_occupied(None, st.session_state.game_id)  # Reset occupied state
+    reset_clicked_cell
     st.session_state.clear()
     st.rerun()
 
@@ -383,7 +385,10 @@ def main():
                     st.write("move_applied")
                     st.rerun()
                 else:
-                    st.warning("Invalid move. You need to outflank an opponent's piece.")
+                    if i != -1:
+                        st.warning("Invalid move. You need to outflank an opponent's piece.")
+                        st.rerun()
+                    st.rerun()
         if st.session_state.online and current_player.color != st.session_state.online_color:
             st.session_state.rerun = True
             st.rerun()
