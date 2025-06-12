@@ -127,14 +127,17 @@ def render_board(board):
     </script>
     """
 
-    doc_ref = db.collection("clicked").document(str(1))
+    doc_ref = db.collection("clicked").document("1")
     clicked = doc_ref.get()
+    
+    components.html(full_html, height=600, scrolling=False)
+    
     if clicked.exists:
         data = clicked.to_dict()
-
-    components.html(full_html, height=600, scrolling=False)
-    st.write(f"clicked on {data["cell"]}")
-    st.session_state.clicked_cell = data["cell"]
+        st.write(f"Clicked on {data['cell']}")
+        st.session_state.clicked_cell = data["cell"]
+    else:
+        st.write("No cell clicked yet.")
     return
 
 def select_buttons():
