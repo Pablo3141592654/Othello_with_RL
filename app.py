@@ -48,6 +48,7 @@ PLAYER_FACTORIES = {
 }
 
 def render_board(board):
+    # Client-side Firebase configuration
     firebase_config_for_js = {
         "apiKey": st.secrets["firebase"]["apiKey"],
         "authDomain": st.secrets["firebase"]["authDomain"],
