@@ -134,7 +134,7 @@ def render_board(board):
 
     components.html(full_html, height=600, scrolling=False)
     st.write(f"clicked on {data["cell"]}")
-    st.session_state = data["cell"]
+    st.session_state.clicked_cell = data["cell"]
     return
 
 def select_buttons():
