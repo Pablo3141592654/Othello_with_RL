@@ -1,4 +1,4 @@
-import time
+    import time
 import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, db, firestore
@@ -347,6 +347,7 @@ def main():
                 st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                 st.rerun()
 
+        st.write("TEST")
         if not st.session_state.online and (st.session_state.players[0] is not HumanPlayer or st.session_state.players[1] is not HumanPlayer):  # Only handle AI moves if not online
             # AI move handling
             if not isinstance(current_player, HumanPlayer): # And not online
@@ -360,12 +361,14 @@ def main():
                     st.warning("No valid moves for AI. Passing turn.")
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                     st.rerun()
+        st.write("Test")
 
         if not st.session_state.online or current_player.color == st.session_state.online_color:
             if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
                 i_str, j_str = st.session_state.clicked_cell.split(",")
                 i, j = int(i_str), int(j_str)
                 st.write(f"clicked on cell {i}, {j}")
+                st.session_state.clicked_cell = None
                 st.write("TEST")
                 if board_obj.apply_move(current_player.color, i, j):
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
