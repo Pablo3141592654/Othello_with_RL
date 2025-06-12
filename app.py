@@ -353,7 +353,7 @@ def main():
                     st.rerun()
 
         if not st.session_state.online or current_player.color == st.session_state.online_color:
-            if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
+            if "clicked_cell" in st.session_state and isinstance(st.session_state.clicked_cell, list):
                 i, j = st.session_state.clicked_cell
                 st.session_state.clicked_cell = None
                 if board_obj.apply_move(current_player.color, i, j):
