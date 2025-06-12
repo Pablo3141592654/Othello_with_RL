@@ -77,23 +77,27 @@ def render_board(board):
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <script>
-      {firebase_js_config}
-      firebase.initializeApp(firebaseConfig);
-      
-      const db = firebase.firestore();
-      function sendClick(i, j) {{
-           console.log("Clicked cell:", i, j);
-           db.collection("clicked_cell").doc("1").set({{
-               cell: `${{i}},${{j}}`
-           }})
-           .then(() => {{
-               console.log("Document successfully written!");
-           }})
-           .catch((error) => {{
-               console.error("Error writing document: ", error);
-           }});
-      }}
-    </script>
+     {firebase_js_config}
+     if (!firebase.apps.length) {{
+         firebase.initializeApp(firebaseConfig);
+     }} else {{
+         firebase.app(); // Use the existing app
+     }}
+     
+     const db = firebase.firestore();
+     function sendClick(i, j) {{
+         console.log("Clicked cell:", i, j);
+         db.collection("clicked_cell").doc("1").set({{
+             cell: `${{i}},${{j}}`
+         }})
+         .then(() => {{
+             console.log("Document successfully written!");
+         }})
+         .catch((error) => {{
+             console.error("Error writing document: ", error);
+         }});
+     }}
+   </script>
 
     <style>
       .othello-grid {{
