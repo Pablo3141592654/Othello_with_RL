@@ -365,7 +365,7 @@ def main():
             if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
                 i_str, j_str = st.session_state.clicked_cell.split(",")
                 i, j = int(i_str), int(j_str)
-                st.write(f"{i}, {j}")
+                st.write(f"clicked on cell {i}, {j}")
                 st.write("TEST")
                 if board_obj.apply_move(current_player.color, i, j):
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
