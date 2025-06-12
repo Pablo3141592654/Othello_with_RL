@@ -4,6 +4,7 @@ import firebase_admin
 from firebase_admin import credentials, db, firestore
 import numpy as np
 from IPython.display import display
+import streamlit.components.v1 as components
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
 
