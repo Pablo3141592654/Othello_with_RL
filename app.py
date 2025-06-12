@@ -134,7 +134,8 @@ def render_board(board):
 
     components.html(full_html, height=600, scrolling=False)
     st.write(f"clicked on {data["cell"]}")
-    return data["cell"]
+    st.session_state = data["cell"]
+    return
 
 def select_buttons():
     st.title("Othello with RL")
@@ -324,7 +325,8 @@ def main():
         if st.session_state.online:
             st.write("Online mode, you are playing as " + ("⚫" if st.session_state.online_color == 1 else "🔴"))
             board_obj.state = load_game_state(st.session_state.game_id)[0]  # Load game state from Firestore
-        st.session_state.clicked_cell = render_board(board_obj.state)
+        render_board(board_obj.state)
+        st.write(f"st.session_state.clicked_cell")
 
         # --- GAME OVER CHECK: If neither player can move, announce winner and stop ---
         if not board_obj.has_valid_move(current_player.color):
