@@ -1,0 +1,15 @@
+{"time":"2025-06-14T23:08:22.368983925+01:00","level":"INFO","msg":"stream: starting","core version":"0.20.1","symlink path":"/home/jonas-petersen/dev/Othello_with_RL/wandb/run-20250614_230822-xkt841wq/logs/debug-core.log"}
+{"time":"2025-06-14T23:08:25.20495845+01:00","level":"INFO","msg":"stream: created new stream","id":"xkt841wq"}
+{"time":"2025-06-14T23:08:25.205077698+01:00","level":"INFO","msg":"stream: started","id":"xkt841wq"}
+{"time":"2025-06-14T23:08:25.2051108+01:00","level":"INFO","msg":"handler: started","stream_id":"xkt841wq"}
+{"time":"2025-06-14T23:08:25.205203741+01:00","level":"INFO","msg":"sender: started","stream_id":"xkt841wq"}
+{"time":"2025-06-14T23:08:25.205260167+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"xkt841wq"}
+{"time":"2025-06-14T23:08:26.259005271+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-06-14T23:11:29.415541425+01:00","level":"INFO","msg":"stream: closing","id":"xkt841wq"}
+{"time":"2025-06-14T23:11:29.415570505+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-06-14T23:11:29.415599181+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-06-14T23:11:31.10605041+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-06-14T23:11:32.711213484+01:00","level":"INFO","msg":"handler: closed","stream_id":"xkt841wq"}
+{"time":"2025-06-14T23:11:32.711322615+01:00","level":"INFO","msg":"sender: closed","stream_id":"xkt841wq"}
+{"time":"2025-06-14T23:11:32.711310625+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"xkt841wq"}
+{"time":"2025-06-14T23:11:32.711632543+01:00","level":"INFO","msg":"stream: closed","id":"xkt841wq"}

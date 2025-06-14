@@ -1,0 +1,15 @@
+{"time":"2025-06-15T11:39:31.908534965+01:00","level":"INFO","msg":"stream: starting","core version":"0.20.1","symlink path":"/home/jonas-petersen/dev/Othello_with_RL/wandb/run-20250615_113931-jjav6z4g/logs/debug-core.log"}
+{"time":"2025-06-15T11:39:32.380723459+01:00","level":"INFO","msg":"stream: created new stream","id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:32.380767722+01:00","level":"INFO","msg":"stream: started","id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:32.380804439+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:32.380894195+01:00","level":"INFO","msg":"sender: started","stream_id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:32.381011022+01:00","level":"INFO","msg":"handler: started","stream_id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:32.715001954+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-06-15T11:39:54.828895394+01:00","level":"INFO","msg":"stream: closing","id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:54.828951615+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-06-15T11:39:54.829016299+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-06-15T11:39:55.588347943+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-06-15T11:39:56.089525821+01:00","level":"INFO","msg":"handler: closed","stream_id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:56.089564466+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:56.089614862+01:00","level":"INFO","msg":"sender: closed","stream_id":"jjav6z4g"}
+{"time":"2025-06-15T11:39:56.089662513+01:00","level":"INFO","msg":"stream: closed","id":"jjav6z4g"}

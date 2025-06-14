@@ -1,0 +1,96 @@
+2025-06-15 08:21:34,943 INFO    MainThread:60529 [wandb_setup.py:_flush():81] Current SDK version is 0.20.1
+2025-06-15 08:21:34,943 INFO    MainThread:60529 [wandb_setup.py:_flush():81] Configure stats pid to 60529
+2025-06-15 08:21:34,943 INFO    MainThread:60529 [wandb_setup.py:_flush():81] Loading settings from /home/jonas-petersen/.config/wandb/settings
+2025-06-15 08:21:34,943 INFO    MainThread:60529 [wandb_setup.py:_flush():81] Loading settings from /home/jonas-petersen/dev/Othello_with_RL/wandb/settings
+2025-06-15 08:21:34,943 INFO    MainThread:60529 [wandb_setup.py:_flush():81] Loading settings from environment variables
+2025-06-15 08:21:34,943 INFO    MainThread:60529 [wandb_init.py:setup_run_log_directory():703] Logging user logs to /home/jonas-petersen/dev/Othello_with_RL/wandb/run-20250615_082134-2l1f81jn/logs/debug.log
+2025-06-15 08:21:34,943 INFO    MainThread:60529 [wandb_init.py:setup_run_log_directory():704] Logging internal logs to /home/jonas-petersen/dev/Othello_with_RL/wandb/run-20250615_082134-2l1f81jn/logs/debug-internal.log
+2025-06-15 08:21:34,944 INFO    MainThread:60529 [wandb_init.py:init():831] calling init triggers
+2025-06-15 08:21:34,944 INFO    MainThread:60529 [wandb_init.py:init():836] wandb.init called with sweep_config: {}
+config: {'episodes': 100, 'epsilon': 0.2, 'lr': 0.001, '_wandb': {}}
+2025-06-15 08:21:34,944 INFO    MainThread:60529 [wandb_init.py:init():872] starting backend
+2025-06-15 08:21:35,156 INFO    MainThread:60529 [wandb_init.py:init():875] sending inform_init request
+2025-06-15 08:21:35,163 INFO    MainThread:60529 [wandb_init.py:init():883] backend started and connected
+2025-06-15 08:21:35,165 INFO    MainThread:60529 [wandb_init.py:init():956] updated telemetry
+2025-06-15 08:21:35,174 INFO    MainThread:60529 [wandb_init.py:init():980] communicating run to backend with 90.0 second timeout
+2025-06-15 08:22:00,679 INFO    MainThread:60529 [wandb_init.py:init():1032] starting run threads in backend
+2025-06-15 08:22:00,831 INFO    MainThread:60529 [wandb_run.py:_console_start():2453] atexit reg
+2025-06-15 08:22:00,831 INFO    MainThread:60529 [wandb_run.py:_redirect():2301] redirect: wrap_raw
+2025-06-15 08:22:00,831 INFO    MainThread:60529 [wandb_run.py:_redirect():2370] Wrapping output streams.
+2025-06-15 08:22:00,831 INFO    MainThread:60529 [wandb_run.py:_redirect():2393] Redirects installed.
+2025-06-15 08:22:00,834 INFO    MainThread:60529 [wandb_init.py:init():1078] run started, returning control to user process
+2025-06-15 08:22:21,310 INFO    Thread-1 (wrapped_target):60529 [retry.py:__call__():173] [no run ID] Retry attempt failed:
+Traceback (most recent call last):
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 198, in _new_conn
+    sock = connection.create_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/util/connection.py", line 85, in create_connection
+    raise err
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/util/connection.py", line 73, in create_connection
+    sock.connect(sa)
+OSError: [Errno 101] Network is unreachable
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 1093, in _validate_conn
+    conn.connect()
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 704, in connect
+    self.sock = sock = self._new_conn()
+                       ^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 213, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPSConnection object at 0x75f971096ff0>: Failed to establish a new connection: [Errno 101] Network is unreachable
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/urllib3/util/retry.py", line 519, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='api.wandb.ai', port=443): Max retries exceeded with url: /graphql (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x75f971096ff0>: Failed to establish a new connection: [Errno 101] Network is unreachable'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/wandb/sdk/lib/retry.py", line 134, in __call__
+    result = self._call_fn(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/wandb/sdk/internal/internal_api.py", line 396, in execute
+    return self.client.execute(*args, **kwargs)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/wandb/vendor/gql-0.2.0/wandb_gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/wandb/sdk/lib/gql_request.py", line 58, in execute
+    request = self.session.post(self.url, **post_args)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/requests/sessions.py", line 637, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jonas-petersen/dev/Othello_with_RL/.venv/lib/python3.12/site-packages/requests/adapters.py", line 700, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.wandb.ai', port=443): Max retries exceeded with url: /graphql (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x75f971096ff0>: Failed to establish a new connection: [Errno 101] Network is unreachable'))
+2025-06-15 08:24:18,183 INFO    MsgRouterThr:60529 [mailbox.py:close():129] [no run ID] Closing mailbox, abandoning 1 handles.

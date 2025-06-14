@@ -16,5 +16,13 @@ ENV/
 *.swp
 *.swo
 
+<<<<<<< HEAD
 # private configuration files
 firebase_key.json
+=======
+firebase_key.json
+*.json
+!data/*.json
+!public/*.json
+othello-with-rl-*-firebase-adminsdk-*.json
+>>>>>>> 906b877 (added some fixes after pulling (firebase integration, creation of own private key (create my own, Jonas Petersen, firebase app with own private key))

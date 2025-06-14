@@ -1,0 +1,15 @@
+{"time":"2025-06-15T11:38:38.24870198+01:00","level":"INFO","msg":"stream: starting","core version":"0.20.1","symlink path":"/home/jonas-petersen/dev/Othello_with_RL/wandb/run-20250615_113838-huhl1uvi/logs/debug-core.log"}
+{"time":"2025-06-15T11:38:39.076908425+01:00","level":"INFO","msg":"stream: created new stream","id":"huhl1uvi"}
+{"time":"2025-06-15T11:38:39.076989132+01:00","level":"INFO","msg":"stream: started","id":"huhl1uvi"}
+{"time":"2025-06-15T11:38:39.077108005+01:00","level":"INFO","msg":"writer: Do: started","stream_id":"huhl1uvi"}
+{"time":"2025-06-15T11:38:39.077224268+01:00","level":"INFO","msg":"sender: started","stream_id":"huhl1uvi"}
+{"time":"2025-06-15T11:38:39.077293578+01:00","level":"INFO","msg":"handler: started","stream_id":"huhl1uvi"}
+{"time":"2025-06-15T11:38:39.478913511+01:00","level":"INFO","msg":"Starting system monitor"}
+{"time":"2025-06-15T11:39:02.600541762+01:00","level":"INFO","msg":"stream: closing","id":"huhl1uvi"}
+{"time":"2025-06-15T11:39:02.600607515+01:00","level":"INFO","msg":"Stopping system monitor"}
+{"time":"2025-06-15T11:39:02.600703568+01:00","level":"INFO","msg":"Stopped system monitor"}
+{"time":"2025-06-15T11:39:03.199413052+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2025-06-15T11:39:03.758439925+01:00","level":"INFO","msg":"handler: closed","stream_id":"huhl1uvi"}
+{"time":"2025-06-15T11:39:03.758518427+01:00","level":"INFO","msg":"writer: Close: closed","stream_id":"huhl1uvi"}
+{"time":"2025-06-15T11:39:03.758559229+01:00","level":"INFO","msg":"sender: closed","stream_id":"huhl1uvi"}
+{"time":"2025-06-15T11:39:03.758682041+01:00","level":"INFO","msg":"stream: closed","id":"huhl1uvi"}

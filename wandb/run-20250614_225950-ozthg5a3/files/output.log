@@ -1,0 +1,17 @@
+/home/jonas-petersen/dev/Othello_with_RL/rl_agent/rl_agent.py:62: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  loss = F.mse_loss(q_vals[0, action_idx], torch.tensor(target_q, dtype=torch.float32))
+Episode 1: Black 48, Red 16
+/home/jonas-petersen/dev/Othello_with_RL/rl_agent/rl_agent.py:62: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  loss = F.mse_loss(q_vals[0, action_idx], torch.tensor(target_q, dtype=torch.float32))
+Episode 2: Black 43, Red 21
+Episode 3: Black 33, Red 31
+Episode 4: Black 43, Red 21
+Episode 5: Black 39, Red 25
+Episode 6: Black 15, Red 49
+Episode 7: Black 5, Red 59
+Episode 8: Black 11, Red 53
+Episode 9: Black 30, Red 34
+Episode 10: Black 44, Red 20
+Model saved to rl_agent/models/oppGreedyGreta_10Episodes.pth
+Testing trained agent vs GreedyGreta...
+Test results over 20 games: Wins: 0, Losses: 20, Draws: 0
