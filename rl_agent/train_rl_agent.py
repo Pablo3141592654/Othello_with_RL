@@ -1,10 +1,27 @@
+import os
 import numpy as np
 from game.board import Board
 from rl_agent.rl_agent import RLAgent
 from game.player import GreedyGreta
 import torch
+import wandb
 
-NUM_EPISODES = 1000
+NUM_EPISODES = 10
+MODEL_NAME = "oppGreedyGreta_10Episodes.pth"  # <-- Set your model name here !!
+MODEL_DIR = "rl_agent/models"
+MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME)
+
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+agent = RLAgent(1, epsilon=0.2)  # <-- Define agent before wandb.init
+opponent = GreedyGreta(-1)       # Or RLAgent(-1) for self-play
+
+wandb.init(project="othello-rl", config={
+    "episodes": NUM_EPISODES,
+    "epsilon": agent.epsilon,
+    "lr": 1e-3,
+    # Add any other hyperparameters you want to track
+})
 
 def play_game(agent_black, agent_red, train=True):
     board = Board()
@@ -40,14 +57,46 @@ def play_game(agent_black, agent_red, train=True):
                 agent_red.store_transition(board.state, None, final_reward, board.state, True)
             return black_count, red_count
 
-if __name__ == "__main__":
-    agent = RLAgent(1, epsilon=0.2)
-    opponent = GreedyGreta(-1)  # Or RLAgent(-1) for self-play
+def test_agent(agent, opponent, episodes=20):
+    wins, losses, draws = 0, 0, 0
+    for ep in range(episodes):
+        black_score, red_score = play_game(agent, opponent, train=False)
+        if black_score > red_score:
+            wins += 1
+        elif black_score < red_score:
+            losses += 1
+        else:
+            draws += 1
+    print(f"Test results over {episodes} games: Wins: {wins}, Losses: {losses}, Draws: {draws}")
 
+if __name__ == "__main__":
     for episode in range(NUM_EPISODES):
         black_score, red_score = play_game(agent, opponent, train=True)
         agent.train_step()
+        win = 1 if black_score > red_score else 0
+        loss = 1 if black_score < red_score else 0
+        draw = 1 if black_score == red_score else 0
+        wandb.log({
+            "episode": episode,
+            "black_score": black_score,
+            "red_score": red_score,
+            "win": win,
+            "loss": loss,
+            "draw": draw,
+            "epsilon": agent.epsilon,
+            # You can add more metrics here
+        })
         print(f"Episode {episode+1}: Black {black_score}, Red {red_score}")
 
-    # Save model if you want
-    torch.save(agent.model.state_dict(), "rl_agent.pth")
+    # Save model to the specified folder and name
+    torch.save(agent.model.state_dict(), MODEL_PATH)
+    print(f"Model saved to {MODEL_PATH}")
+
+    # Load the trained model for testing (optional, but good practice)
+    test_agent_instance = RLAgent(1, epsilon=0.0)
+    test_agent_instance.model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
+    test_agent_instance.model.eval()
+
+    # Test against GreedyGreta
+    print("Testing trained agent vs GreedyGreta...")
+    test_agent(test_agent_instance, GreedyGreta(-1), episodes=20)
