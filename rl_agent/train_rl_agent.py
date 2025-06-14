@@ -5,9 +5,10 @@ from rl_agent.rl_agent import RLAgent
 from game.player import GreedyGreta
 import torch
 import wandb
+from collections import deque
 
-NUM_EPISODES = 10
-MODEL_NAME = "oppGreedyGreta_10Episodes.pth"  # <-- Set your model name here !!
+NUM_EPISODES = 100
+MODEL_NAME = "oppGreedyGreta_100Episodes.pth"  # <-- Set your model name here !!
 MODEL_DIR = "rl_agent/models"
 MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME)
 
@@ -70,21 +71,24 @@ def test_agent(agent, opponent, episodes=20):
     print(f"Test results over {episodes} games: Wins: {wins}, Losses: {losses}, Draws: {draws}")
 
 if __name__ == "__main__":
+    win_window = deque(maxlen=100)
+    total_wins = 0
+
     for episode in range(NUM_EPISODES):
         black_score, red_score = play_game(agent, opponent, train=True)
         agent.train_step()
         win = 1 if black_score > red_score else 0
-        loss = 1 if black_score < red_score else 0
-        draw = 1 if black_score == red_score else 0
+        total_wins += win
+        win_window.append(win)
+        win_rate = total_wins / (episode + 1)
+        moving_win_rate = sum(win_window) / len(win_window)
+        score_diff = black_score - red_score
         wandb.log({
             "episode": episode,
-            "black_score": black_score,
-            "red_score": red_score,
-            "win": win,
-            "loss": loss,
-            "draw": draw,
+            "win_rate": win_rate,
+            "moving_win_rate": moving_win_rate,
+            "score_diff": score_diff,
             "epsilon": agent.epsilon,
-            # You can add more metrics here
         })
         print(f"Episode {episode+1}: Black {black_score}, Red {red_score}")
 
