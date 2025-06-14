@@ -16,8 +16,5 @@ ENV/
 *.swp
 *.swo
 
+# Ignore Firebase service account keys
 firebase_key.json
-*.json
-!data/*.json
-!public/*.json
-othello-with-rl-*-firebase-adminsdk-*.json
