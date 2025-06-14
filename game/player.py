@@ -1,5 +1,4 @@
 import random
-from rl_agent.rl_agent import RLAgent
 
 class Player:
     def __init__(self, color):
@@ -54,6 +53,7 @@ class RLJonas(Player):
     """Deep RL agent using a neural network (DQN)."""
     def __init__(self, color, model_path=None, epsilon=0.1):
         super().__init__(color)
+        from rl_agent.rl_agent import RLAgent  # <-- Move import here
         self.agent = RLAgent(color, epsilon=epsilon)
         if model_path:
             import torch
