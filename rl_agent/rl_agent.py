@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import numpy as np
 import random
 
-from player import Player
+from game.player import Player
 from rl_agent.q_network import QNetwork
 from rl_agent.utils import board_to_tensor, action_to_index, index_to_action
 
@@ -45,6 +45,9 @@ class RLAgent(Player):
             return
 
         for state, action, reward, next_state, done in self.transitions:
+            if action is None:
+                continue  # Skip final reward transitions with no action
+
             state_tensor = board_to_tensor(state, self.color).unsqueeze(0)
             next_state_tensor = board_to_tensor(next_state, self.color).unsqueeze(0)
 
@@ -56,7 +59,7 @@ class RLAgent(Player):
                 target_q += gamma * torch.max(next_q_vals)
 
             action_idx = action_to_index(action, self.board_size)
-            loss = F.mse_loss(q_vals[0, action_idx], torch.tensor(target_q))
+            loss = F.mse_loss(q_vals[0, action_idx], torch.tensor(target_q, dtype=torch.float32))
 
             self.optimizer.zero_grad()
             loss.backward()
