@@ -1,14 +1,23 @@
 import time
 import streamlit as st
+import numpy as np
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley, RLJonas  # <-- Add RLJonas here
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+# Initialize Firebase only once
+if not firebase_admin._apps:
+    cred = credentials.Certificate("firebase_key.json")  # Path to your Firebase service account key
+    firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 PLAYER_TYPES = {
     "Human": HumanPlayer,
     "Greedy Greta (simple AI)": GreedyGreta,
     "Minimax Max (lookahead AI)": MinimaxMax,
     "RL Random Riley (random RL)": RLRandomRiley,
-    "RL Jonas (deep RL)": RLJonas,  # <-- Add this line
+    "RL Jonas (deep RL)": lambda color: RLJonas(color, model_path="rl_agent.pth", epsilon=0.0),  # <-- Use trained model, no exploration
 }
 
 def render_board(board):
@@ -65,14 +74,14 @@ def select_buttons():
     st.title("Othello with RL")
     st.write("Choose a player for each color:")
 
-    black_choice = st.selectbox("Black (⚫)", list(PLAYER_FACTORIES.keys()), key="black_player")
-    red_choice = st.selectbox("Red (🔴)", list(PLAYER_FACTORIES.keys()), key="red_player")
+    black_choice = st.selectbox("Black (⚫)", list(PLAYER_TYPES.keys()), key="black_player")
+    red_choice = st.selectbox("Red (🔴)", list(PLAYER_TYPES.keys()), key="red_player")
 
     if st.button("Start Game"):
         st.session_state.page = "game"
         st.session_state.players = [
-            PLAYER_FACTORIES[black_choice](1),
-            PLAYER_FACTORIES[red_choice](-1)
+            PLAYER_TYPES[black_choice](1),
+            PLAYER_TYPES[red_choice](-1)
         ]
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
