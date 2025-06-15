@@ -7,8 +7,8 @@ import torch
 import wandb
 from collections import deque
 
-NUM_EPISODES = 100
-MODEL_NAME = "oppGreedyGreta_100Episodes.pth"  # <-- Set your model name here !!
+NUM_EPISODES = 115
+MODEL_NAME = "oppGreedyGreta_115Episodes.pth"  # <-- Set your model name here !!
 MODEL_DIR = "rl_agent/models"
 MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME)
 
@@ -73,22 +73,23 @@ def test_agent(agent, opponent, episodes=20):
 if __name__ == "__main__":
     win_window = deque(maxlen=100)
     total_wins = 0
+    avg_score_diff = 0
 
     for episode in range(NUM_EPISODES):
         black_score, red_score = play_game(agent, opponent, train=True)
         agent.train_step()
         win = 1 if black_score > red_score else 0
         total_wins += win
-        win_window.append(win)
         win_rate = total_wins / (episode + 1)
-        moving_win_rate = sum(win_window) / len(win_window)
         score_diff = black_score - red_score
+        avg_score_diff = (avg_score_diff * episode + score_diff) / (episode + 1)
         wandb.log({
             "episode": episode,
             "win_rate": win_rate,
-            "moving_win_rate": moving_win_rate,
-            "score_diff": score_diff,
             "epsilon": agent.epsilon,
+            "score_diff": score_diff,
+            "avg_score_diff": avg_score_diff
+            # ...other metrics...
         })
         print(f"Episode {episode+1}: Black {black_score}, Red {red_score}")
 

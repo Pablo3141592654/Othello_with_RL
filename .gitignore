@@ -23,3 +23,9 @@ firebase_key.json
 !data/*.json
 !public/*.json
 othello-with-rl-*-firebase-adminsdk-*.json
+
+# Ignore wandb files (Weights & Biases)
+wandb/
+
+# Ignore model files (20MB/model, seem to large)
+rl_agent/models
