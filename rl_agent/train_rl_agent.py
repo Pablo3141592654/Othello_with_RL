@@ -14,8 +14,10 @@ MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME)
 
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-agent = RLAgent(1, epsilon=0.2)  # <-- Define agent before wandb.init
-opponent = GreedyGreta(-1)       # Or RLAgent(-1) for self-play
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+agent = RLAgent(1, epsilon=0.2, device=device)  # Pass device to RLAgent
+opponent = GreedyGreta(-1)       # Or RLAgent(-1, device=device) for self-play
 
 wandb.init(project="othello-rl", config={
     "episodes": NUM_EPISODES,
@@ -98,10 +100,10 @@ if __name__ == "__main__":
     print(f"Model saved to {MODEL_PATH}")
 
     # Load the trained model for testing (optional, but good practice)
-    test_agent_instance = RLAgent(1, epsilon=0.0)
-    test_agent_instance.model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
+    test_agent_instance = RLAgent(1, epsilon=0.0, device=device)
+    test_agent_instance.model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
     test_agent_instance.model.eval()
 
     # Test against GreedyGreta
     print("Testing trained agent vs GreedyGreta...")
-    test_agent(test_agent_instance, GreedyGreta(-1), episodes=20)
+    test_agent(test_agent_instance, GreedyGreta(-1), episodes=48)
