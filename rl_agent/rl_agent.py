@@ -5,7 +5,7 @@ for board positions, choosing moves using an ε-greedy strategy.
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F 
 import numpy as np
 import random
 
@@ -14,17 +14,18 @@ from rl_agent.q_network import QNetwork
 from rl_agent.utils import board_to_tensor, action_to_index, index_to_action
 
 class RLAgent(Player):
-    def __init__(self, color, board_size=8, epsilon=0.1, lr=1e-3):
+    def __init__(self, color, board_size=8, epsilon=0.1, lr=1e-3, device=None):
         super().__init__(color)
         self.board_size = board_size
         self.epsilon = epsilon
-        self.model = QNetwork(board_size)
+        self.device = device if device is not None else torch.device("cpu")
+        self.model = QNetwork(board_size).to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
         self.transitions = []  # List of (state, action, reward, next_state, done)
 
     def get_move(self, board_obj):
-        board_tensor = board_to_tensor(board_obj.state, self.color).unsqueeze(0)  # shape [1, 2, 8, 8]
-        q_values = self.model(board_tensor).detach().numpy().flatten()
+        board_tensor = board_to_tensor(board_obj.state, self.color).unsqueeze(0).to(self.device)  # shape [1, 2, 8, 8]
+        q_values = self.model(board_tensor).detach().cpu().numpy().flatten()
 
         valid_moves = board_obj.get_valid_moves(self.color)
         if not valid_moves:
@@ -48,8 +49,8 @@ class RLAgent(Player):
             if action is None:
                 continue  # Skip final reward transitions with no action
 
-            state_tensor = board_to_tensor(state, self.color).unsqueeze(0)
-            next_state_tensor = board_to_tensor(next_state, self.color).unsqueeze(0)
+            state_tensor = board_to_tensor(state, self.color).unsqueeze(0).to(self.device)
+            next_state_tensor = board_to_tensor(next_state, self.color).unsqueeze(0).to(self.device)
 
             q_vals = self.model(state_tensor)
             target_q = reward
@@ -59,7 +60,7 @@ class RLAgent(Player):
                 target_q += gamma * torch.max(next_q_vals)
 
             action_idx = action_to_index(action, self.board_size)
-            loss = F.mse_loss(q_vals[0, action_idx], torch.tensor(target_q, dtype=torch.float32))
+            loss = F.mse_loss(q_vals[0, action_idx], torch.tensor(target_q, dtype=torch.float32, device=self.device))
 
             self.optimizer.zero_grad()
             loss.backward()
