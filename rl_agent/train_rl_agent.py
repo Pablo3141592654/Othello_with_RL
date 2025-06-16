@@ -2,22 +2,66 @@ import os
 import numpy as np
 from game.board import Board
 from rl_agent.rl_agent import RLAgent
-from game.player import GreedyGreta
+from game.player import MinimaxMax, RLRandomRiley
 import torch
 import wandb
 from collections import deque
+import re
+from datetime import datetime
+import json
 
-NUM_EPISODES = 115
-MODEL_NAME = "oppGreedyGreta_115Episodes.pth"  # <-- Set your model name here !!
+# --- Helper functions for model filename convention ---
+def parse_episode_count_from_filename(filename):
+    match = re.search(r'_(\\d+)Episodes', filename)
+    if match:
+        return int(match.group(1))
+    return 0
+
+def build_model_filename(opponent_name, total_episodes, device, date=None):
+    if date is None:
+        date = datetime.now().strftime('%Y%m%d')
+    return f"opp{opponent_name}_{total_episodes}Episodes_{device}_{date}.pth"
+
+def get_new_model_filename(base_name, total_episodes):
+    return f"{base_name}_{total_episodes}Episodes.pth"
+
+def save_metadata(model_path, total_episodes, config):
+    meta = {
+        "model_path": model_path,
+        "total_episodes": total_episodes,
+        "config": config,
+    }
+    meta_path = model_path.replace('.pth', '.meta.json')
+    with open(meta_path, 'w') as f:
+        json.dump(meta, f, indent=2)
+    print(f"Metadata saved to {meta_path}")
+
+# --- Setup ---
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+NUM_EPISODES = 50
 MODEL_DIR = "rl_agent/models"
+
+opponent = RLRandomRiley(-1)
+opponent_name = type(opponent).__name__  # For filename
+
+# Detect if resuming from a previous model
+existing_model = None
+existing_episodes = 0
+
+# Find latest model for this opponent (optional: could be improved to pick latest by date)
+for fname in os.listdir(MODEL_DIR):
+    if fname.startswith(f"opp{opponent_name}_") and fname.endswith(".pth"):
+        if parse_episode_count_from_filename(fname) > existing_episodes:
+            existing_model = fname
+            existing_episodes = parse_episode_count_from_filename(fname)
+
+total_episodes = existing_episodes + NUM_EPISODES
+MODEL_NAME = build_model_filename(opponent_name, total_episodes, device.type)
 MODEL_PATH = os.path.join(MODEL_DIR, MODEL_NAME)
 
 os.makedirs(MODEL_DIR, exist_ok=True)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-agent = RLAgent(1, epsilon=0.2, device=device)  # Pass device to RLAgent
-opponent = GreedyGreta(-1)       # Or RLAgent(-1, device=device) for self-play
+agent = RLAgent(1, epsilon=0.2, device=device)
 
 wandb.init(project="othello-rl", config={
     "episodes": NUM_EPISODES,
@@ -77,6 +121,20 @@ if __name__ == "__main__":
     total_wins = 0
     avg_score_diff = 0
 
+    # Parse previous episode count if resuming
+    prev_episodes = 0
+    base_model_name = None
+    if os.path.exists(MODEL_PATH):
+        agent.model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+        print(f"Loaded existing model from {MODEL_PATH}")
+        prev_episodes = parse_episode_count_from_filename(MODEL_NAME)
+        # Remove _{n}Episodes.pth to get base name
+        base_model_name = re.sub(r'_\\d+Episodes\\.pth$', '', MODEL_NAME)
+    else:
+        # Remove _{n}Episodes.pth if present, else strip .pth
+        base_model_name = re.sub(r'_\\d+Episodes\\.pth$', '', MODEL_NAME)
+        base_model_name = base_model_name.replace('.pth', '')
+
     for episode in range(NUM_EPISODES):
         black_score, red_score = play_game(agent, opponent, train=True)
         agent.train_step()
@@ -86,24 +144,30 @@ if __name__ == "__main__":
         score_diff = black_score - red_score
         avg_score_diff = (avg_score_diff * episode + score_diff) / (episode + 1)
         wandb.log({
-            "episode": episode,
+            "episode": prev_episodes + episode + 1,
             "win_rate": win_rate,
             "epsilon": agent.epsilon,
             "score_diff": score_diff,
             "avg_score_diff": avg_score_diff
             # ...other metrics...
         })
-        print(f"Episode {episode+1}: Black {black_score}, Red {red_score}")
+        print(f"Episode {prev_episodes + episode + 1}: Black {black_score}, Red {red_score}")
 
-    # Save model to the specified folder and name
-    torch.save(agent.model.state_dict(), MODEL_PATH)
-    print(f"Model saved to {MODEL_PATH}")
+    # Save model with updated episode count
+    total_episodes = prev_episodes + NUM_EPISODES
+    new_model_name = get_new_model_filename(base_model_name, total_episodes)
+    new_model_path = os.path.join(MODEL_DIR, new_model_name)
+    torch.save(agent.model.state_dict(), new_model_path)
+    print(f"Model saved to {new_model_path}")
+
+    # Save metadata
+    save_metadata(new_model_path, total_episodes, dict(wandb.config))
 
     # Load the trained model for testing (optional, but good practice)
     test_agent_instance = RLAgent(1, epsilon=0.0, device=device)
-    test_agent_instance.model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+    test_agent_instance.model.load_state_dict(torch.load(new_model_path, map_location=device))
     test_agent_instance.model.eval()
 
-    # Test against GreedyGreta
-    print("Testing trained agent vs GreedyGreta...")
-    test_agent(test_agent_instance, GreedyGreta(-1), episodes=48)
+    # Test against RLRandomRiley
+    print("Testing trained agent vs RLRandomRiley...")
+    test_agent(test_agent_instance, RLRandomRiley(-1), episodes=48)
