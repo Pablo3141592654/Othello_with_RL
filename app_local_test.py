@@ -29,14 +29,16 @@ PLAYER_FACTORIES = {
 }
 
 def render_board(board):
-    interaction_style = "" if not st.session_state.get("rerun", False) else "pointer-events: none;"
-
     board_html = ""
     for i in range(8):
         for j in range(8):
             cell = board[i][j]
             label = "⚫" if cell == 1 else "🔴" if cell == -1 else "⠀"
-            board_html += f'<div class="othello-cell" style="{interaction_style}" onclick="sendClick({i}, {j})">{label}</div>'
+            if not st.session_state.get("rerun", False):
+                interaction_attr = f'onclick="sendClick({i}, {j})"'
+            else:
+                interaction_attr = ""
+            board_html += f'<div class="othello-cell" {interaction_attr}>{label}</div>'
     
     full_html = f"""
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -268,56 +270,57 @@ def main():
     if "rerun" not in st.session_state:
             st.session_state.rerun = False
     
-    if not st.session_state.rerun:
-        # Add this at the top of main()
-        ai_think_time = st.sidebar.slider(
-            "AI thinking time (seconds)", min_value=0.0, max_value=3.0, value=0.5, step=0.1
-        )
-        st.session_state.ai_think_time = ai_think_time
 
-        black_depth = st.sidebar.slider(
-            "Black AI depth", min_value=1, max_value=5, value=2)
-        st.session_state.black_depth = black_depth
+    # Add this at the top of main()
+    ai_think_time = st.sidebar.slider(
+        "AI thinking time (seconds)", min_value=0.0, max_value=3.0, value=0.5, step=0.1
+    )
+    st.session_state.ai_think_time = ai_think_time
 
-        red_depth = st.sidebar.slider(
-            "Red AI depth", min_value=1, max_value=5, value=2)
-        st.session_state.red_depth = red_depth
+    black_depth = st.sidebar.slider(
+        "Black AI depth", min_value=1, max_value=5, value=2)
+    st.session_state.black_depth = black_depth
 
-        if "page" not in st.session_state:
-            st.session_state.page = "select"
-        if st.session_state.page == "select":
-            select_buttons()
-            return
+    red_depth = st.sidebar.slider(
+        "Red AI depth", min_value=1, max_value=5, value=2)
+    st.session_state.red_depth = red_depth
 
-        if "board_obj" not in st.session_state:
-            st.session_state.board_obj = Board()
-        board_obj = st.session_state.board_obj
+    if "page" not in st.session_state:
+        st.session_state.page = "select"
+    if st.session_state.page == "select":
+        select_buttons()
+        return
 
-        if "players" not in st.session_state:
-            st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
+    if "board_obj" not in st.session_state:
+        st.session_state.board_obj = Board()
+    board_obj = st.session_state.board_obj
 
-        if "current_player_idx" not in st.session_state:
-            st.session_state.current_player_idx = 0
-        
-        if "online" not in st.session_state:
-            st.session_state.online = False
+    if "players" not in st.session_state:
+        st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
 
+    if "current_player_idx" not in st.session_state:
+        st.session_state.current_player_idx = 0
     
-        current_player = st.session_state.players[st.session_state.current_player_idx]
-        board = board_obj.state
+    if "online" not in st.session_state:
+        st.session_state.online = False
 
-        st.title("Othello Game")
-        if st.button("Restart/Exit Game"):
-            end_game() # session_state, firebase, etc.
 
-        black_count, red_count = board_obj.count_pieces()
-        st.write(f"**⚫ Black: {black_count}** | **🔴 Red: {red_count}**")
-        st.write(f"### Current Turn: {'⚫' if current_player.color == 1 else '🔴'}")
-        if st.session_state.online:
-            st.write("Online mode, you are playing as " + ("⚫" if st.session_state.online_color == 1 else "🔴"))
-            board_obj.state = load_game_state(st.session_state.game_id)[0]  # Load game state from Firestore
-        render_board(board_obj.state)
+    current_player = st.session_state.players[st.session_state.current_player_idx]
+    board = board_obj.state
 
+    st.title("Othello Game")
+    if st.button("Restart/Exit Game"):
+        end_game() # session_state, firebase, etc.
+
+    black_count, red_count = board_obj.count_pieces()
+    st.write(f"**⚫ Black: {black_count}** | **🔴 Red: {red_count}**")
+    st.write(f"### Current Turn: {'⚫' if current_player.color == 1 else '🔴'}")
+    if st.session_state.online:
+        st.write("Online mode, you are playing as " + ("⚫" if st.session_state.online_color == 1 else "🔴"))
+        board_obj.state = load_game_state(st.session_state.game_id)[0]  # Load game state from Firestore
+    render_board(board_obj.state)
+
+    if not st.session_state.rerun:
         # --- GAME OVER CHECK: If neither player can move, announce winner and stop ---
         if not board_obj.has_valid_move(current_player.color):
             if not board_obj.has_valid_move(-current_player.color):
@@ -374,8 +377,6 @@ def main():
             st.rerun()
     else:
         st.warning("Waiting for opponent's move...")
-        if st.button("Restart/Exit Game"):
-            end_game()
         autoreset()
         game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
