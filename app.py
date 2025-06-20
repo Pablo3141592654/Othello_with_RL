@@ -80,11 +80,17 @@ def render_board(board):
     </div>
     
     <style>
+        .othello-wrapper {{
+            width: 100%;
+            overflow-x: auto;
+            padding: 1rem 0;
+        }}
         .othello-grid {{
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             gap: 2px;
-            max-width: 95vmin; /* Prevents board from becoming too wide */
+            width: 90vmin;
+            max-width: 360px;
             margin: auto;
         }}
         .othello-cell {{
@@ -92,7 +98,7 @@ def render_board(board):
             aspect-ratio: 1 / 1;
             background: #116611;
             color: white;
-            font-size: clamp(16px, 4vmin, 40px); /* Responsive font size */
+            font-size: clamp(14px, 4.5vmin, 32px);
             border: 1px solid #222;
             display: flex;
             justify-content: center;
