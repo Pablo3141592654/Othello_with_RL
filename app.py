@@ -58,12 +58,15 @@ def render_board(board):
     }};
     """
     
-    interaction_attr = 'onclick="sendClick({i}, {j})"'
     board_html = ""
     for i in range(8):
         for j in range(8):
             cell = board[i][j]
             label = "⚫" if cell == 1 else "🔴" if cell == -1 else "⠀"
+            if not st.session_state.get("rerun", False):
+                interaction_attr = f'onclick="sendClick({i}, {j})"'
+            else:
+                interaction_attr = ""
             board_html += f'<div class="othello-cell" {interaction_attr}>{label}</div>'
 
     full_html = f"""
