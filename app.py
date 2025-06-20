@@ -73,36 +73,32 @@ def render_board(board):
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-    <style>
-        .othello-grid {{
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 2px;
-            width: 100%;
-            max-width: 100vw; /* or try 95vw to leave padding */
-            margin: auto;
-            box-sizing: border-box;
-            padding: 0 4px;
-        }}
-        .othello-cell {{
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background: #116611;
-            color: white;
-            font-size: min(8vw, 36px);
-            border: 1px solid #222;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            padding: 0;
-            margin: 0;
-        }}
-    </style>
-
-    <div class="othello-grid">
-        {board_html}
+    <div style="width: 100%; overflow-x: auto;">
+        <div class="othello-grid">
+            {board_html}
+        </div>
     </div>
+
+       <style>
+            .othello-grid {{
+                display: grid;
+                grid-template-columns: repeat(8, 60px);  /* bigger cells */
+                gap: 4px;
+                margin: auto;
+            }}
+            .othello-cell {{
+                width: 60px;
+                height: 60px;
+                background: #116611;
+                color: white;
+                font-size: 40px;
+                border: 1px solid #222;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+            }}
+        </style>
 
     <script>
         {firebase_js_config}
@@ -128,7 +124,9 @@ def render_board(board):
         }}
     </script>
     """
+
     components.html(full_html, height=700, scrolling=False)
+
     
     doc_ref = db.collection("clicked_cell").document("1")
     clicked = doc_ref.get()
