@@ -34,7 +34,8 @@ def render_board(board):
         for j in range(8):
             cell = board[i][j]
             label = "⚫" if cell == 1 else "🔴" if cell == -1 else "⠀"
-            board_html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
+            if not st.session_state.rerun:
+                board_html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
     
     full_html = f"""
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -377,7 +378,7 @@ def main():
         autoreset()
         game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
-            st.session_state.board_obj.state = game_data[0] # needs to be session_state (I don't know why)
+            st.session_state.board_obj.state = game_data[0] # needs to be session_state cause board_obj is defined in if clause
             st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
             st.session_state.rerun = False
             st.rerun()
