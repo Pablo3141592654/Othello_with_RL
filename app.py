@@ -58,13 +58,14 @@ def render_board(board):
     }};
     """
     
+    interaction_style = "" if not st.session_state.get("rerun", False) else "pointer-events: none;"
+
     board_html = ""
     for i in range(8):
         for j in range(8):
             cell = board[i][j]
             label = "⚫" if cell == 1 else "🔴" if cell == -1 else "⠀"
-            if not st.session_state.rerun:
-                board_html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
+            board_html += f'<div class="othello-cell" style="{interaction_style}" onclick="sendClick({i}, {j})">{label}</div>'
 
     full_html = f"""
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
