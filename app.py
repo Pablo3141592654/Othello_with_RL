@@ -72,33 +72,33 @@ def render_board(board):
     full_html = f"""
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
+    
     <div style="width: 100%; overflow-x: auto;">
         <div class="othello-grid">
             {board_html}
         </div>
     </div>
-
-       <style>
-            .othello-grid {{
-                display: grid;
-                grid-template-columns: repeat(8, 60px);  /* bigger cells */
-                gap: 4px;
-                margin: auto;
-            }}
-            .othello-cell {{
-                width: 60px;
-                height: 60px;
-                background: #116611;
-                color: white;
-                font-size: 40px;
-                border: 1px solid #222;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: pointer;
-            }}
-        </style>
+    
+    <style>
+        .othello-grid {{
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            gap: 4px;
+            margin: auto;
+        }}
+        .othello-cell {{
+            width: 60px;
+            height: 60px;
+            background: #116611;
+            color: white;
+            font-size: 40px;
+            border: 1px solid #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }}
+    </style>
 
     <script>
         {firebase_js_config}
