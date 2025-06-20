@@ -80,26 +80,27 @@ def render_board(board):
     </div>
     
     <style>
-        .othello-grid {{
+        .othello-grid {
             display: grid;
-            grid-template-columns: repeat(8, 60px);
-            gap: 4px;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            max-width: 95vmin; /* Prevents board from becoming too wide */
             margin: auto;
-        }}
-        .othello-cell {{
-            width: 60px;
-            height: 60px;
+        }
+        .othello-cell {
+            width: 100%;
+            aspect-ratio: 1 / 1;
             background: #116611;
             color: white;
-            font-size: 40px;
+            font-size: clamp(16px, 4vmin, 40px); /* Responsive font size */
             border: 1px solid #222;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-        }}
+            padding: 0;
+        }
     </style>
-
     <script>
         {firebase_js_config}
         if (!firebase.apps.length) {{
