@@ -120,7 +120,7 @@ def render_board(board):
 
         function sendClick(i, j) {{
             console.log("Clicked cell:", i, j);
-            db.collection("clicked_cell").doc(clicked_id).set({{
+            db.collection("clicked_cell").doc("{clicked_id}").set({{
                 cell: `${{i}},${{j}}`
             }})
             .then(() => {{
