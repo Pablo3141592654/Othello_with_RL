@@ -69,6 +69,8 @@ def render_board(board):
                 interaction_attr = ""
             board_html += f'<div class="othello-cell" {interaction_attr}>{label}</div>'
 
+    clicked_id = st.session_state.clicked_id
+    
     full_html = f"""
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -106,6 +108,7 @@ def render_board(board):
         }}
     </style>
     <script>
+        const clicked_id = "{clicked_id}"
         {firebase_js_config}
         if (!firebase.apps.length) {{
             firebase.initializeApp(firebaseConfig);
@@ -117,11 +120,12 @@ def render_board(board):
 
         function sendClick(i, j) {{
             console.log("Clicked cell:", i, j);
-            db.collection("clicked_cell").doc("1").set({{
+            db.collection("clicked_cell").doc("{clicked_id}").set({{
                 cell: `${{i}},${{j}}`
             }})
             .then(() => {{
                 console.log("Cell click recorded.");
+                console.log("Clicked ID:", clicked_id);
             }})
             .catch((error) => {{
                 console.error("Error writing document: ", error);
@@ -129,21 +133,18 @@ def render_board(board):
         }}
     </script>
     """
+    components.html(full_html, height=400, scrolling=False)
 
-    components.html(full_html, height=700, scrolling=False)
-
-    
-    doc_ref = db.collection("clicked_cell").document("1")
-    clicked = doc_ref.get()
-    
-    if clicked.exists:
-        data = clicked.to_dict()
-        st.write(f"Clicked on {data['cell']}")
+    doc_ref = db.collection("clicked_cell").document(f"{st.session_state.clicked_id}")
+    clicked = doc_ref.get() 
+    data = clicked.to_dict() if clicked.exists else None
+    if data["cell"] is not None:
         st.session_state.clicked_cell = data["cell"]
-        reset_clicked_cell()
+        reset_clicked_cell(False)
     else:
         st.write("No cell clicked yet.")
     return
+
 
 def select_buttons():
     st.title("Othello with RL")
@@ -160,6 +161,8 @@ def select_buttons():
         ]
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
+        st.session_state.clicked_id = load_clicked_id()
+        st.write("st.session_state.clicked_id: ", st.session_state.clicked_id)
         st.rerun()
     if st.button("Online"):
         board = Board().reset()
@@ -172,6 +175,7 @@ def select_buttons():
         save_occupied(occupied[1], None)
         occupied = load_occupied() # Refresh occupied (changed one line ago)
 
+        st.session_state.clicked_id = load_clicked_id() # before opponent joins to prevent issues
         shown = False # to show warning only once
         while occupied[1] == -1:
             if not shown == True:    
@@ -266,11 +270,49 @@ def load_occupied():
         save_game_state(board_obj.state, 1, game_id)
     return game_id, player
 
-def reset_clicked_cell():
-    doc_ref = db.collection("clicked_cell").document("1")
+def load_clicked_id():
+    doc_ref = db.collection("occupied").document("1")
+    occupied_data = doc_ref.get()
+    occupied_data = occupied_data.to_dict()
+    clicked_array = occupied_data["clicked_id"]
+    counter = 1
+    clicked_id = 0
+    while clicked_id == 0:
+        if counter not in clicked_array: # if game_id is not occupied
+            clicked_id = counter
+        counter += 1
+
+    clicked_doc_ref = db.collection("clicked_cell").document(f"{clicked_id}") # check if game(game_id) exists
+    clicked_doc = clicked_doc_ref.get()
+
+    if not clicked_doc.exists: # if not create it
+        clicked_doc_ref.set({
+            'cell': None
+        })
+
+    clicked_array.append(clicked_id) # add clicked_id to occupied
+    doc_ref.set({
+        'clicked_id': clicked_array
+    }, merge=True) # set the clicked_id in the occupied document
+
+    return clicked_id
+
+def reset_clicked_cell(game_over):
+    doc_ref = db.collection("clicked_cell").document(f"{st.session_state.clicked_id}")
     doc_ref.set({
         "cell": None
     })
+
+    if game_over == True: # if game is over, remove clicked_id from occupied
+        occupied_ref = db.collection("occupied").document("1")
+        occupied_data = occupied_ref.get()
+        occupied_data = occupied_data.to_dict()
+        clicked = occupied_data["clicked_id"]
+        clicked.remove(st.session_state.clicked_id) # remove clicked_id from occupied
+        occupied_ref.set({
+            "clicked_id": clicked
+        }, merge=True)
+    return
 
 def end_game():
     board_obj = Board()
@@ -280,7 +322,7 @@ def end_game():
     if st.session_state.online:
         save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
         save_occupied(None, st.session_state.game_id)  # Reset occupied state
-    reset_clicked_cell
+    reset_clicked_cell(True)
     st.session_state.clear()
     st.rerun()
 
@@ -329,6 +371,9 @@ def main():
     
     if "online" not in st.session_state:
         st.session_state.online = False
+
+    if "clicked_id" not in st.session_state:
+        st.session_state.clicked_id = 0
 
 
     current_player = st.session_state.players[st.session_state.current_player_idx]
@@ -383,6 +428,7 @@ def main():
             if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
                 i_str, j_str = st.session_state.clicked_cell.split(",")
                 i, j = int(i_str), int(j_str)
+                st.session_state.clicked_cell = None # reset clicked cell after processing
                 if board_obj.apply_move(current_player.color, i, j):
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                     current_player = st.session_state.players[st.session_state.current_player_idx] # update before saving the color in firebase
