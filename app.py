@@ -78,7 +78,7 @@ def render_board(board):
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             gap: 2px;
-            max-width: 90vw;
+            max-width: 95vw;
             margin: auto;
         }}
         .othello-cell {{
