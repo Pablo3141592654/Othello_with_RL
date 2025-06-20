@@ -213,11 +213,10 @@ def save_occupied(player, game_id): # (change, remove)
     games = occupied_data["games"]
     if player == -1:
         games.append(st.session_state.game_id)
-    if game_id:
-        try:
-            games.remove(game_id) # remove game_id from occupied games if not already done
-        except Exception as e:
-            return
+    try:
+        games.remove(game_id)
+    except ValueError:
+        pass  # game_id wasn't in the list; that's okay
     doc_ref.set({
         'games': games
     }, merge=True)
