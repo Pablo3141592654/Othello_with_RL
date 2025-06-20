@@ -58,7 +58,7 @@ def render_board(board):
     }};
     """
     
-    interaction_attr = 'onclick="sendClick({i}, {j})"
+    interaction_attr = 'onclick="sendClick({i}, {j})"'
     board_html = ""
     for i in range(8):
         for j in range(8):
