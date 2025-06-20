@@ -104,8 +104,6 @@ def render_board(board):
 
     doc_ref = db.collection("clicked_cell").document("1")
     clicked = doc_ref.get() 
-    st.session_state.counter += 1
-    st.write(f"TEST2 {st.session_state.counter}")
     if clicked.exists:
         data = clicked.to_dict()
         st.write(f"Clicked on {data['cell']}")
@@ -299,8 +297,6 @@ def main():
         if "online" not in st.session_state:
             st.session_state.online = False
 
-        if "counter" not in st.session_state:
-            st.session_state.counter = 0
     
         current_player = st.session_state.players[st.session_state.current_player_idx]
         board = board_obj.state

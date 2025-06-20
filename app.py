@@ -109,7 +109,7 @@ def render_board(board):
 
         function sendClick(i, j) {{
             console.log("Clicked cell:", i, j);
-            db.collection("clicked").doc("1").set({{
+            db.collection("clicked_cell").doc("1").set({{
                 cell: `${{i}},${{j}}`
             }})
             .then(() => {{
@@ -123,7 +123,7 @@ def render_board(board):
     """
     components.html(full_html, height=700, scrolling=False)
     
-    doc_ref = db.collection("clicked").document("1")
+    doc_ref = db.collection("clicked_cell").document("1")
     clicked = doc_ref.get()
     
     if clicked.exists:
@@ -318,8 +318,6 @@ def main():
         if "online" not in st.session_state:
             st.session_state.online = False
 
-        if "counter" not in st.session_state:
-            st.session_state.counter = 0
     
         current_player = st.session_state.players[st.session_state.current_player_idx]
         board = board_obj.state
