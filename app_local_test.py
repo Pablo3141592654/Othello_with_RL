@@ -30,43 +30,52 @@ PLAYER_FACTORIES = {
 
 def render_board(board):
     board_html = ""
-    for i in range(8):
-        for j in range(8):
-            cell = board[i][j]
-            label = "⚫" if cell == 1 else "🔴" if cell == -1 else "⠀"
-            if not st.session_state.get("rerun", False):
-                interaction_attr = f'onclick="sendClick({i}, {j})"'
-            else:
-                interaction_attr = ""
-            board_html += f'<div class="othello-cell" {interaction_attr}>{label}</div>'
+        for i in range(8):
+            for j in range(8):
+                cell = board[i][j]
+                label = "⚫" if cell == 1 else "🔴" if cell == -1 else "⠀"
+                if not st.session_state.get("rerun", False):
+                    interaction_attr = f'onclick="sendClick({i}, {j})"'
+                else:
+                    interaction_attr = ""
+                board_html += f'<div class="othello-cell" {interaction_attr}>{label}</div>'
     
-    full_html = f"""
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
-
-    <style>
-        .othello-grid {{
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 2px;
-            max-width: 90vw;
-            margin: auto;
-        }}
-        .othello-cell {{
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background: #116611;
-            color: white;
-            font-size: min(8vw, 36px);
-            border: 1px solid #222;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            padding: 0;
-            margin: 0;
-        }}
-    </style>
+        full_html = f"""
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+        
+        <div style="width: 100%; overflow-x: auto;">
+            <div class="othello-grid">
+                {board_html}
+            </div>
+        </div>
+        
+        <style>
+            .othello-wrapper {{
+                width: 100%;
+                overflow-x: auto;
+                display: flex;
+                justify-content: center;
+            }}
+            .othello-grid {{
+                display: grid;
+                grid-template-columns: repeat(8, minmax(8vmin, 40px));
+                gap: 2px;
+            }}
+            .othello-cell {{
+                background: #116611;
+                color: white;
+                font-size: min(6vmin, 28px);
+                border: 1px solid #222;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                aspect-ratio: 1 / 1;
+                cursor: pointer;
+                padding: 0;
+                margin: 0;
+            }}
+        </style>
 
     <div class="othello-grid">
         {board_html}
