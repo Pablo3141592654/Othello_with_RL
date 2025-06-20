@@ -58,7 +58,7 @@ def render_board(board):
     }};
     """
     
-    interaction_attr = 'onclick="sendClick({i}, {j})"' if not st.session_state.get("rerun", False) else "onclick=''"
+    interaction_attr = 'onclick="sendClick({i}, {j})" # ' if not st.session_state.get("rerun", False) else "onclick=''"
 
     board_html = ""
     for i in range(8):
