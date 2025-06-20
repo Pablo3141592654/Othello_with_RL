@@ -80,14 +80,14 @@ def render_board(board):
     </div>
     
     <style>
-        .othello-grid {
+        .othello-grid {{
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             gap: 2px;
             max-width: 95vmin; /* Prevents board from becoming too wide */
             margin: auto;
-        }
-        .othello-cell {
+        }}
+        .othello-cell {{
             width: 100%;
             aspect-ratio: 1 / 1;
             background: #116611;
@@ -99,7 +99,7 @@ def render_board(board):
             align-items: center;
             cursor: pointer;
             padding: 0;
-        }
+        }}
     </style>
     <script>
         {firebase_js_config}
