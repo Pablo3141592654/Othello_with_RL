@@ -3,24 +3,20 @@ import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, db, firestore
 import numpy as np
+from IPython.display import display
+import streamlit.components.v1 as components
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
 
-# Load credentials
-cred = credentials.Certificate("firebase_key.json")
 
 # Initialize the app
 if not firebase_admin._apps:
+    cred = credentials.Certificate("firebase_key.json")
     firebase_admin.initialize_app(cred)
 
 # Get Firestore client
 db = firestore.client()
 
-# Example: Access your data
-doc_ref = db.collection("games").document("1")
-doc = doc_ref.get()
-if doc.exists:
-    print(doc.to_dict())
 
 PLAYER_FACTORIES = {
     "Human": lambda color: HumanPlayer(color),
@@ -31,55 +27,94 @@ PLAYER_FACTORIES = {
     ]),
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
 }
-def render_board(board):
-    st.markdown("""
-        <style>
-        .othello-board-bg {
-            background: #116611;
-            padding: 8px;
-            border-radius: 8px;
-            display: inline-block;
-        }
-        div[data-testid="stHorizontalBlock"] {
-            gap: 0 !important;
-        }
-        div[data-testid="column"] {
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        button[kind="secondary"] {
-            min-width: 56px !important;
-            min-height: 56px !important;
-            width: 56px !important;
-            height: 56px !important;
-            font-size: 3.2rem !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border-radius: 0 !important;
-            border: 1.5px solid #222 !important;
-            background: transparent !important;
-            line-height: 1 !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
 
-    st.markdown('<div class="othello-board-bg">', unsafe_allow_html=True)
+def render_board(board):
+    board_html = ""
     for i in range(8):
-        cols = st.columns(8, gap="small")  # gap will be overridden by CSS
         for j in range(8):
             cell = board[i][j]
-            if cell == 1:
-                label = "⚫"
-            elif cell == -1:
-                label = "🔴"
-            else:
-                label = ""
-            if cols[j].button(label, key=f"{i}-{j}"):
-                st.session_state.clicked_cell = (i, j)
-    st.markdown('</div>', unsafe_allow_html=True)
+            label = "⚫" if cell == 1 else "🔴" if cell == -1 else "⠀"
+            board_html += f'<div class="othello-cell" onclick="sendClick({i}, {j})">{label}</div>'
+    
+    full_html = f"""
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        .othello-grid {{
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 2px;
+            max-width: 90vw;
+            margin: auto;
+        }}
+        .othello-cell {{
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #116611;
+            color: white;
+            font-size: min(8vw, 36px);
+            border: 1px solid #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }}
+    </style>
+
+    <div class="othello-grid">
+        {board_html}
+    </div>
+
+    <script>
+        const firebaseConfig = {{
+            apiKey: "AIzaSyAMKrO-E0kK4FgzBNNbAkbtH8Vdg4Ryx_U",
+            authDomain: "othello-with-rl.firebaseapp.com",
+            projectId: "othello-with-rl",
+            storageBucket: "othello-with-rl.appspot.com",
+            messagingSenderId: "988286445200",
+            appId: "1:988286445200:web:76357a2280480fe6c81a15"
+        }};
+
+        if (!firebase.apps.length) {{
+            firebase.initializeApp(firebaseConfig);
+        }} else {{
+            firebase.app();
+        }}
+
+        const db = firebase.firestore();
+
+        function sendClick(i, j) {{
+            console.log("Clicked cell:", i, j);
+            db.collection("clicked_cell").doc("1").set({{
+                cell: `${{i}},${{j}}`
+            }})
+            .then(() => {{
+                console.log("Cell click recorded.");
+            }})
+            .catch((error) => {{
+                console.error("Error writing document: ", error);
+            }});
+        }}
+    </script>
+    """
+    components.html(full_html, height=700, scrolling=False)
+
+    doc_ref = db.collection("clicked_cell").document("1")
+    clicked = doc_ref.get() 
+    st.session_state.counter += 1
+    st.write(f"TEST2 {st.session_state.counter}")
+    if clicked.exists:
+        data = clicked.to_dict()
+        st.write(f"Clicked on {data['cell']}")
+        st.session_state.clicked_cell = data["cell"]
+        reset_clicked_cell()
+    else:
+        st.write("No cell clicked yet.")
+    return
+
 
 def select_buttons():
     st.title("Othello with RL")
@@ -106,13 +141,13 @@ def select_buttons():
         st.session_state.online = True
         st.session_state.page = "game"
         save_occupied(occupied[1], None)
+        occupied = load_occupied() # Refresh occupied (changed one line ago)
 
         shown = False # to show warning only once
-        while occupied[1] != -1:
+        while occupied[1] == -1:
             if not shown == True:    
                 st.warning("Waiting for an opponent to join...")
                 shown = True
-            time.sleep(5)
             occupied = load_occupied()
         st.rerun()
 
@@ -200,19 +235,27 @@ def load_occupied():
         save_game_state(board_obj.state, 1, game_id)
     return game_id, player
 
+def reset_clicked_cell():
+    doc_ref = db.collection("clicked_cell").document("1")
+    doc_ref.set({
+        "cell": None
+    })
+
 def end_game():
     board_obj = Board()
     board_obj.reset()
 
     board_obj.reset()  # Reset the board state
-    save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
-    save_occupied(None, st.session_state.game_id)  # Reset occupied state
+    if st.session_state.online:
+        save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
+        save_occupied(None, st.session_state.game_id)  # Reset occupied state
+    reset_clicked_cell
     st.session_state.clear()
     st.rerun()
 
 def autoreset():
-    if "time" not in st.session_state:
-        st.session_state.time = time.time()
+    if "time" not in st.session_state or st.session_state.time is None:
+        st.session_state.time = time.time()  # initialize it
     if time.time() - st.session_state.time > 300:  # Reset after 5min
         st.warning("Game has been reset due to inactivity.")
         end_game()
@@ -247,8 +290,6 @@ def main():
             st.session_state.board_obj = Board()
         board_obj = st.session_state.board_obj
 
-        st.write("Test")
-
         if "players" not in st.session_state:
             st.session_state.players = [HumanPlayer(1), HumanPlayer(-1)]
 
@@ -257,6 +298,9 @@ def main():
         
         if "online" not in st.session_state:
             st.session_state.online = False
+
+        if "counter" not in st.session_state:
+            st.session_state.counter = 0
     
         current_player = st.session_state.players[st.session_state.current_player_idx]
         board = board_obj.state
@@ -282,14 +326,17 @@ def main():
                     st.success("Game ended. 🔴 Red won!")
                 else:
                     st.info("Game ended. It's a draw!")
-                end_game() # session_state, firebase, etc.
+                time.sleep(50)
+                end_game()
             else:
                 st.info(f"No valid moves for {'⚫' if current_player.color == 1 else '🔴'}. Passing turn.")
                 st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                 st.rerun()
 
-        if not st.session_state.online:  # Only handle AI moves if not online
-            # AI move handling
+        if not st.session_state.online and (
+            not isinstance(st.session_state.players[0], HumanPlayer) or
+            not isinstance(st.session_state.players[1], HumanPlayer)
+        ):           # AI move handling
             if not isinstance(current_player, HumanPlayer): # And not online
                 time.sleep(st.session_state.ai_think_time)
                 move = current_player.get_move(board_obj)
@@ -304,16 +351,23 @@ def main():
 
         if not st.session_state.online or current_player.color == st.session_state.online_color:
             if "clicked_cell" in st.session_state and st.session_state.clicked_cell:
-                i, j = st.session_state.clicked_cell
-                st.session_state.clicked_cell = None
+                i_str, j_str = st.session_state.clicked_cell.split(",")
+                i, j = int(i_str), int(j_str)
                 if board_obj.apply_move(current_player.color, i, j):
                     st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
                     current_player = st.session_state.players[st.session_state.current_player_idx] # update before saving the color in firebase
                     if st.session_state.online:
                         save_game_state(board_obj.state, current_player.color, st.session_state.game_id)
+                    st.session_state.time = None # reset time to avoid autoreset
                     st.rerun()
                 else:
-                    st.warning("Invalid move. You need to outflank an opponent's piece.")
+                    if st.session_state != None:
+                        st.warning("Invalid move. You need to outflank an opponent's piece.")
+                        st.rerun()
+                    autoreset()
+                    st.rerun()
+            else:
+                st.rerun() # get the clicked cell from firebase
         if st.session_state.online and current_player.color != st.session_state.online_color:
             st.session_state.rerun = True
             st.rerun()

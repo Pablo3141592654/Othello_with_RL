@@ -31,13 +31,8 @@ if not firebase_admin._apps:
 # Get Firestore client
 db = firestore.client()
 
-# Example: Access your data
-doc_ref = db.collection("games").document("1")
-doc = doc_ref.get()
-if doc.exists:
-    st.write(doc.to_dict())
-else:
-    st.write("Document not found.")
+
+
 
 PLAYER_FACTORIES = {
     "Human": lambda color: HumanPlayer(color),
@@ -126,7 +121,7 @@ def render_board(board):
         }}
     </script>
     """
-    components.html(full_html, height=600, scrolling=False)
+    components.html(full_html, height=700, scrolling=False)
     
     doc_ref = db.collection("clicked").document("1")
     clicked = doc_ref.get()
@@ -165,13 +160,13 @@ def select_buttons():
         st.session_state.online = True
         st.session_state.page = "game"
         save_occupied(occupied[1], None)
+        occupied = load_occupied() # Refresh occupied (changed one line ago)
 
         shown = False # to show warning only once
-        while occupied[1] != -1:
+        while occupied[1] == -1:
             if not shown == True:    
                 st.warning("Waiting for an opponent to join...")
                 shown = True
-            time.sleep(5)
             occupied = load_occupied()
         st.rerun()
 
@@ -278,8 +273,8 @@ def end_game():
     st.rerun()
 
 def autoreset():
-    if "time" not in st.session_state:
-        st.session_state.time = time.time()
+    if "time" not in st.session_state or st.session_state.time is None:
+        st.session_state.time = time.time()  # initialize it
     if time.time() - st.session_state.time > 300:  # Reset after 5min
         st.warning("Game has been reset due to inactivity.")
         end_game()
@@ -322,6 +317,9 @@ def main():
         
         if "online" not in st.session_state:
             st.session_state.online = False
+
+        if "counter" not in st.session_state:
+            st.session_state.counter = 0
     
         current_player = st.session_state.players[st.session_state.current_player_idx]
         board = board_obj.state
@@ -347,7 +345,8 @@ def main():
                     st.success("Game ended. 🔴 Red won!")
                 else:
                     st.info("Game ended. It's a draw!")
-                end_game() # session_state, firebase, etc.
+                time.sleep(50)
+                end_game()
             else:
                 st.info(f"No valid moves for {'⚫' if current_player.color == 1 else '🔴'}. Passing turn.")
                 st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
@@ -378,7 +377,7 @@ def main():
                     current_player = st.session_state.players[st.session_state.current_player_idx] # update before saving the color in firebase
                     if st.session_state.online:
                         save_game_state(board_obj.state, current_player.color, st.session_state.game_id)
-                    st.write("move_applied")
+                    st.session_state.time = None # reset time to avoid autoreset
                     st.rerun()
                 else:
                     if st.session_state != None:
@@ -386,6 +385,8 @@ def main():
                         st.rerun()
                     autoreset()
                     st.rerun()
+            else:
+                st.rerun() # get the clicked cell from firebase
         if st.session_state.online and current_player.color != st.session_state.online_color:
             st.session_state.rerun = True
             st.rerun()
