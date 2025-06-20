@@ -83,28 +83,26 @@ def render_board(board):
         .othello-wrapper {{
             width: 100%;
             overflow-x: auto;
-            padding: 1rem 0;
+            display: flex;
+            justify-content: center;
         }}
         .othello-grid {{
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
+            grid-template-columns: repeat(8, minmax(8vmin, 40px));
             gap: 2px;
-            width: 90vmin;
-            max-width: 360px;
-            margin: auto;
         }}
         .othello-cell {{
-            width: 100%;
-            aspect-ratio: 1 / 1;
             background: #116611;
             color: white;
-            font-size: clamp(14px, 4.5vmin, 32px);
+            font-size: min(6vmin, 28px);
             border: 1px solid #222;
             display: flex;
             justify-content: center;
             align-items: center;
+            aspect-ratio: 1 / 1;
             cursor: pointer;
             padding: 0;
+            margin: 0;
         }}
     </style>
     <script>
