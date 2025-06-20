@@ -189,7 +189,10 @@ def save_occupied(player, game_id): # (change, remove)
     if player == -1:
         games.append(st.session_state.game_id)
     if game_id:
-        games.remove(game_id)
+        try:
+            game_id = int(game_id)  # Ensure game_id wasn't already removed
+        except Exception as e:
+            return
     doc_ref.set({
         'games': games
     }, merge=True)
