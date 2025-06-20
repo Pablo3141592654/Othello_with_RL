@@ -107,6 +107,7 @@ def render_board(board):
             margin: 0;
         }}
     </style>
+
     <script>
         const clicked_id = "{clicked_id}"
         {firebase_js_config}
