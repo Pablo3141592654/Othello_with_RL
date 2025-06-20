@@ -74,13 +74,16 @@ def render_board(board):
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <style>
-        .othello-grid {{
+        .othello-grid {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             gap: 2px;
-            max-width: 95vw;
+            width: 100%;
+            max-width: 100vw; /* or try 95vw to leave padding */
             margin: auto;
-        }}
+            box-sizing: border-box;
+            padding: 0 4px;
+        }
         .othello-cell {{
             width: 100%;
             aspect-ratio: 1 / 1;
