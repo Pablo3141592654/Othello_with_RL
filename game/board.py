@@ -57,10 +57,28 @@ class Board:
         red_count = np.sum(self.state == -1)
         return black_count, red_count
     
-    def count_edges(self, edge_value):
+    def count_edges(self, edge_value, border_value):# WATCH OUT: returns only the right difference, not the actual scores!!
+        # Base counts
         black_count = np.sum(self.state == 1)
         red_count = np.sum(self.state == -1)
-        black_count += (self.state[0, 0] + self.state[0, 7] + self.state[7, 0] + self.state[7, 7]) * edge_value # Can be negative if more red edges, but thets fine for EdgesEdgar
+
+        # Corners
+        corners = [self.state[0, 0], self.state[0, 7], self.state[7, 0], self.state[7, 7]]
+        corner_score = sum(corners) * edge_value  # Will be negative if red controls more
+
+        # Borders (edges are excluded)
+        top_row = self.state[0, 1:7]
+        bottom_row = self.state[7, 1:7]
+        left_col = self.state[1:7, 0]
+        right_col = self.state[1:7, 7]
+
+        # Combine edge control — each element is -1, 0, or 1
+        border_control = np.sum(top_row) + np.sum(bottom_row) + np.sum(left_col) + np.sum(right_col)
+        border_score = border_control * border_value
+
+        # Add corner + border influence to black's score - black can be negative, but thats fine for the difference
+        black_count += corner_score + border_score
+
         return black_count, red_count
 
 
