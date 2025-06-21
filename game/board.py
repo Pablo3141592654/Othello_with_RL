@@ -56,6 +56,13 @@ class Board:
         black_count = np.sum(self.state == 1)
         red_count = np.sum(self.state == -1)
         return black_count, red_count
+    
+    def count_edges(self, edge_value):
+        black_count = np.sum(self.state == 1)
+        red_count = np.sum(self.state == -1)
+        black_count += np.sum(self.state[0, 0], self.state[0, 7], self.state[7, 0], self.state[7, 7]) * edge_value # Can be negative if more red edges, but thets fine for EdgesEdgar
+        return black_count, red_count
+
 
     def apply_move(self, player, row, col):
         new_state = self.is_legal_move(player, row, col)
@@ -76,3 +83,4 @@ class Board:
         new_board = Board()
         new_board.state = self.state.copy()
         return new_board
+
