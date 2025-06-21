@@ -9,6 +9,11 @@ from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley, EdgesEdgar
 
 
+# Choose which Firebase config to use
+FIREBASE_CONFIG_KEY = st.secrets.get("firebase_config_key", "firebase_main")
+firebase_config = st.secrets[FIREBASE_CONFIG_KEY]
+
+
 # Initialize the app
 if not firebase_admin._apps:
     cred = credentials.Certificate("firebase_key.json")
@@ -98,12 +103,13 @@ def render_board(board):
     <script>
         const clicked_id = "{clicked_id}"
         const firebaseConfig = {{
-            apiKey: "AIzaSyAMKrO-E0kK4FgzBNNbAkbtH8Vdg4Ryx_U",
-            authDomain: "othello-with-rl.firebaseapp.com",
-            projectId: "othello-with-rl",
-            storageBucket: "othello-with-rl.appspot.com",
-            messagingSenderId: "988286445200",
-            appId: "1:988286445200:web:76357a2280480fe6c81a15"
+            apiKey: "{firebase_config['apiKey']}",
+            authDomain: "{firebase_config['authDomain']}",
+            projectId: "{firebase_config['projectId']}",
+            storageBucket: "{firebase_config['storageBucket']}",
+            messagingSenderId: "{firebase_config['messagingSenderId']}",
+            appId: "{firebase_config['appId']}",
+            measurementId: "{firebase_config.get('measurementId', '')}"
         }};
 
         if (!firebase.apps.length) {{

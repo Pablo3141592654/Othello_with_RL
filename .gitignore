@@ -8,6 +8,7 @@ __pycache__/
 venv/
 env/
 .venv/
+.conda/
 ENV/
 
 # IDE files (specific to VSCode and PyCharm, for example)
@@ -18,3 +19,4 @@ ENV/
 
 # private configuration files
 firebase_key.json
+.streamlit/secrets.toml

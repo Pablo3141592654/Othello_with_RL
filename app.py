@@ -21,11 +21,17 @@ firebase_config = {
     "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"],
     "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"],
     "universe_domain": st.secrets["firebase"]["universe_domain"],
+    # Add these safely if they exist
+    "apiKey": st.secrets["firebase"].get("apiKey", ""),
+    "authDomain": st.secrets["firebase"].get("authDomain", ""),
+    "storageBucket": st.secrets["firebase"].get("storageBucket", ""),
+    "messagingSenderId": st.secrets["firebase"].get("messagingSenderId", ""),
+    "appId": st.secrets["firebase"].get("appId", ""),
 }
 
 # Initialize Firebase app if not already initialized
 if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_config)
+    cred = credentials.Certificate("firebase_key.json")
     firebase_admin.initialize_app(cred)
 
 # Get Firestore client
@@ -294,7 +300,11 @@ def load_clicked_id():
     doc_ref = db.collection("occupied").document("1")
     occupied_data = doc_ref.get()
     occupied_data = occupied_data.to_dict()
-    clicked_array = occupied_data["clicked_id"]
+    if occupied_data is None:
+        occupied_data = {}
+    clicked_array = occupied_data.get("clicked_id", [])
+    if not isinstance(clicked_array, list):
+        clicked_array = []
     counter = 1
     clicked_id = 0
     while clicked_id == 0:
