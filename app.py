@@ -42,7 +42,10 @@ PLAYER_FACTORIES = {
         st.session_state.get("red_depth", 2)
     ]),
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
-    "Edges Edgar (edge control AI)": lambda color: EdgesEdgar(color, edge_value=st.session_state.get("edge_value", 2)),
+    "Edges Edgar (edge control AI)": lambda color: EdgesEdgar(color, depths=[
+        st.session_state.get("black_depth", 2),
+        st.session_state.get("red_depth", 2)
+    ], edge_value=st.session_state.get("edge_value", 2)),
 }
 
 def render_board(board):
