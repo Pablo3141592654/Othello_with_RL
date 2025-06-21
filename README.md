@@ -1,24 +1,22 @@
-# Othello_with_RL
+# Othello\_with\_RL
 
 A modern, interactive Othello/Reversi game built with [Streamlit](https://streamlit.io/) for the web, featuring multiple play modes and a roadmap for advanced AI opponents—including a reinforcement learning (RL) agent.
 
-It is also online accessible under https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/
+It is also online accessible under [https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/](https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/)
 
 ---
 
 ## 🎮 Features
 
-- **Play Othello in your browser**: No installation required for users—just run and play!
+- **Play Othello in your browser or on mobile**: Fully responsive and touch-compatible.
 - **Game Modes**:
-  - Player vs Player (local)
-  - Player vs AI (basic AI, more coming soon)
-  - AI vs Player
-  - AI vs AI
-  - Online Multiplayer (planned)
-- **Interactive UI**: Clickable board, real-time updates, and a sidebar chat assistant.
+  - Choose any combination of AI or Player for each side (via selectboxes)
+  - Fully working Online Multiplayer with real-time sync (via Firebase)
+- **Interactive UI**: Clickable board, real-time updates, and fully mobile-compatible via JS+Firebase integration.
 - **Score Tracking**: Live piece counts and turn indicators.
 - **Restart & State Management**: Easily restart games and manage session state.
-- **(Planned) Save/Load Online Games**: Firebase integration for online multiplayer.
+- **Flexible AI Support**: Mix-and-match any agent types—including custom edge strategies, Minimax, and RL placeholder.
+- **Sidebar Controls**: Adjust AI difficulty, edge/border values, and AI thinking time.
 
 ---
 
@@ -29,181 +27,150 @@ It is also online accessible under https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.
 - Python 3.8+
 - [pip](https://pip.pypa.io/en/stable/)
 
-### Installation
+### Installation (for Development Only)
+
+If you want to develop or test the app locally:
 
 1. **Clone the repository:**
+
    ```sh
    git clone https://github.com/yourusername/Othello_with_RL.git
    cd Othello_with_RL
    ```
 
 2. **Install dependencies:**
+
    ```sh
-   pip install streamlit numpy
+   pip install -r requirements.txt
    ```
 
-   *(For online mode: `firebase_admin` will be required in the future.)*
+3. **Create **``
 
-3. **Run the app:**
+   If you're running in **Production Mode (not Streamlit Cloud)**, you must:
+
+   - Set up your own Firebase project.
+   - Download the private key from Firebase.
+   - Save it as `firebase_key.json` and load it manually.
+   - Modify the Firebase config in `render_board()` (JavaScript block) to use your Firebase project.
+
+4. **Run the app (Development mode):**
+
    ```sh
-   streamlit run app.py
+   streamlit run app_local_test.py
    ```
 
-4. **Open your browser:**  
-   Visit the local URL provided by Streamlit (usually http://localhost:8501).
+5. **Visit the app:** Open the local URL provided by Streamlit (usually [http://localhost:8501](http://localhost:8501)).
+
+---
+
+## 🧪 Local Development with `app_local_test.py`
+
+If you're running the app **locally from a terminal (e.g., VS Code)** and can't access `st.secrets` (like on Streamlit Cloud), use the fallback script:
+
+```sh
+streamlit run app_local_test.py
+```
+
+This lets you test all game features, AI, and Firebase logic without needing cloud secrets.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend/UI**: [Streamlit](https://streamlit.io/)
-- **Backend/Game Logic**: Python (NumPy for board state)
-- **State Management**: Streamlit session state
-- **(Planned) Online Multiplayer**: Firebase Realtime Database
+- **Frontend/UI**: [Streamlit](https://streamlit.io/) + JavaScript integration via Firebase for interactivity
+- **Backend/Game Logic**: Python (NumPy, modular design)
+- **AI Agents**: Classic heuristics (Minimax, Greedy, Edge-based), and placeholder RL agent
+- **Realtime Online Sync**: Firebase Firestore + Firestore JS SDK
+- **State Management**: Streamlit session state, Firebase for multiplayer sync
+- **Mobile Compatibility**: Fully functional on mobile via JS+Streamlit-Firebase communication
 
 ---
 
 ## 🤖 AI & Future Plans
 
-- **Current AI**: Simple rule-based agent (chooses the first valid move).
-- **Planned AI Agents**:
-  - **Jonas**: Reinforcement Learning (RL) agent using modern RL techniques.
-  - **Pablo**: Classic AI agent (e.g., Minimax, Alpha-Beta pruning, or heuristic-based).
-- **Online Multiplayer**: Firebase integration for real-time games.
-- **Improved UI/UX**: Enhanced chat assistant, move hints, and more.
+- **Current Agents**:
+  - `HumanPlayer`: Local user via UI
+  - `GreedyGreta`: Picks the first available move
+  - `MinimaxMax`: Classical Minimax algorithm with lookahead
+  - `EdgesEdgar`: Minimax variant that prioritizes edge/border control
+  - `RLRandomRiley`: Picks a random legal move (RL placeholder)
+
+### AI Agent Code (from `game/player.py`)
+
+```python
+# ... (same code block as before)
+```
 
 ---
 
-## 📝 To-Do
+### Board Logic (from `game/board.py`)
 
-- [ ] Jonas: Implement RL-based Othello agent.
-- [ ] Pablo: Implement classic AI agent (Minimax/Alpha-Beta).
-- [ ] Complete Firebase integration for online play.
-- [ ] Add move suggestions and hints.
-- [ ] Improve chat assistant with more interactivity.
-- [ ] Add tests and modularize game logic into [`game/`](game/).
+```python
+# ... (same code block as before)
+```
 
 ---
 
-## 👥 Contributing
+## 📅 Roadmap / To-Do
 
-Contributions are welcome!  
-If you'd like to add features, fix bugs, or write your own AI agent, please open an issue or submit a pull request.
+-
 
 ---
 
-## 📄 License
+## 📄 Code Structure
+
+```
+# ... (same structure block)
+```
+
+---
+
+## 📑 Main App Logic Overview (`app.py`)
+
+- **UI Rendering:** `render_board` builds an interactive grid with Firebase-based JS listeners.
+- **Firebase Integration:** Read/write board state and clicks via Firestore.
+- **Game Flow:**
+  - Game setup via `select_buttons()` (Selectboxes for each side)
+  - Real-time turn handling with online/offline modes
+  - Win condition detection, auto-reset on timeout
+- **Session Management:**
+  - Track clicked cell, board state, active player
+  - `st.session_state` used for local logic and caching
+
+---
+
+## 👥 Authors
+
+- **Pablo Petersen**: Game logic, UI, Firebase integration, classic AI (Minimax, Edges)
+- **Jonas Petersen**: Reinforcement Learning agent (planned)
+
+---
+
+## 📃 License
 
 MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-## 🙋 Authors
-
-- **Pablo Petersen**: Game logic, multiplayer interface, classic AI (planned)
-- **Jonas Petersen**: RL agent (planned)
-
----
-
 ## 📢 Acknowledgements
 
-- CS50 Final Project
+- Harvard CS50 Final Project
 - Streamlit for rapid prototyping
+- JS for cleaner UI
+- Firebase for simple real-time sync
 
 ---
 
-## 🧩 Code Structure & Logic
+## 🤔 Why Othello?
 
-The project is organized for clarity and extensibility:
+Othello provides a compact yet rich domain for AI experimentation:
 
-```
-Othello_with_RL/
-│
-├── app.py                # Main Streamlit app: UI, game loop, and session state
-├── cache.py              # (Legacy) Streamlit cache clearing
-├── game/
-│   ├── __init__.py
-│   ├── board.py          # (Planned) Board logic and utilities
-│   ├── player.py         # (Planned) Player and AI agent classes
-│   └── utils.py          # (Planned) Helper functions
-├── README.md
-├── LICENSE
-└── .gitignore
-```
+- Fast to simulate
+- Balanced randomness vs determinism
+- Clear win/loss condition
+- Strategic yet intuitive for users
 
-### Main Logic (`app.py`)
+This project aims to bring together usability (via Streamlit) and AI learning (RL + heuristics) in an accessible way.
 
-- **UI & Game Loop:**  
-  Handles the Streamlit interface, game state, and user interactions.  
-  - `render_board`: Draws the board and handles cell clicks.
-  - `initialize_board`: Sets up the initial Othello board.
-  - `is_legal_move`: Checks and applies legal moves.
-  - `ai_move`: Simple AI (currently picks the first valid move).
-  - `select_buttons`: Lets users pick the game mode.
-  - `main`: Orchestrates the game flow, including AI turns and session state.
+Enjoy playing, exploring, and contributing!
 
-- **Session State:**  
-  Used to track the board, turn count, chat log, and game mode across reruns.
-
-- **Chat Assistant:**  
-  Sidebar chat log for move feedback and game status.
-
-- **Online Multiplayer (Planned):**  
-  Placeholder functions for saving/loading game state with Firebase.
-
-### Modular Game Logic (`game/`)
-
-- **`game/board.py`**  
-  *Planned*: Move board-related logic (e.g., move validation, board updates) here for better separation.
-
-- **`game/player.py`**  
-  *Planned*: Implement player classes, including:
-    - Human player
-    - Classic AI (Minimax/Alpha-Beta, heuristics) — *Pablo's task*
-    - RL agent — *Jonas's task*
-
-- **`game/utils.py`**  
-  *Planned*: Utility functions (e.g., move generation, scoring, serialization).
-
-### Where to Add New Features
-
-- **Advanced AI Agents:**  
-  - RL agent: Implement in `game/player.py` (Jonas).
-  - Classic AI: Implement in `game/player.py` (Pablo).
-  - Integrate these into `app.py`'s AI move logic.
-
-- **Online Multiplayer:**  
-  - Complete Firebase integration in `app.py` (see commented code).
-  - Add user authentication and real-time updates.
-
-- **UI/UX Improvements:**  
-  - Enhance chat assistant in `app.py`.
-  - Add move suggestions/hints (could use `game/utils.py`).
-
-- **Testing & Modularization:**  
-  - Move board and player logic from `app.py` to `game/`.
-  - Add unit tests for core logic (suggested: `tests/` folder).
-
----
-
-## 💡 Future Improvement Ideas
-
-- **AI Difficulty Levels:**  
-  Allow users to select between different AI strategies and difficulties.
-
-- **Game Analysis:**  
-  Add move history, undo/redo, and post-game analysis.
-
-- **Mobile-Friendly UI:**  
-  Improve layout for smaller screens.
-
-- **User Profiles & Leaderboards:**  
-  Track stats and rankings for online play.
-
----
-
-*See the code comments and [`game/`](game/) folder for more details and extension points!*
-
----
-
-Enjoy playing Othello, and feel free to contribute or suggest features!
