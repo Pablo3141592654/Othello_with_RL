@@ -16,11 +16,5 @@ ENV/
 *.swp
 *.swo
 
-# Ignore Firebase service account keys
+# private configuration files
 firebase_key.json
-
-# Ignore wandb files (Weights & Biases)
-wandb/
-
-# Ignore model files (20MB/model, seem to large)
-rl_agent/models

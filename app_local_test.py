@@ -8,30 +8,14 @@ import streamlit.components.v1 as components
 from game.board import Board
 from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley, EdgesEdgar
 
-# Build credentials dict from Streamlit secrets
-firebase_config = {
-    "type": st.secrets["firebase"]["type"],
-    "project_id": st.secrets["firebase"]["project_id"],
-    "private_key_id": st.secrets["firebase"]["private_key_id"],
-    "private_key": st.secrets["firebase"]["private_key"],
-    "client_email": st.secrets["firebase"]["client_email"],
-    "client_id": st.secrets["firebase"]["client_id"],
-    "auth_uri": st.secrets["firebase"]["auth_uri"],
-    "token_uri": st.secrets["firebase"]["token_uri"],
-    "auth_provider_x509_cert_url": st.secrets["firebase"]["auth_provider_x509_cert_url"],
-    "client_x509_cert_url": st.secrets["firebase"]["client_x509_cert_url"],
-    "universe_domain": st.secrets["firebase"]["universe_domain"],
-}
 
-# Initialize Firebase app if not already initialized
+# Initialize the app
 if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_config)
+    cred = credentials.Certificate("firebase_key.json")
     firebase_admin.initialize_app(cred)
 
 # Get Firestore client
 db = firestore.client()
-
-
 
 
 PLAYER_FACTORIES = {
@@ -60,19 +44,6 @@ PLAYER_FACTORIES = {
 }
 
 def render_board(board):
-    config = st.secrets["firebase"]
-    
-    firebase_js_config = f"""
-    const firebaseConfig = {{
-        apiKey: "{config['apiKey']}",
-        authDomain: "{config['authDomain']}",
-        projectId: "{config['project_id']}",
-        storageBucket: "{config['storageBucket']}",
-        messagingSenderId: "{config['messagingSenderId']}",
-        appId: "{config['appId']}"
-    }};
-    """
-    
     board_html = ""
     for i in range(8):
         for j in range(8):
@@ -122,9 +93,19 @@ def render_board(board):
             margin: 0;
         }}
     </style>
+
+
     <script>
         const clicked_id = "{clicked_id}"
-        {firebase_js_config}
+        const firebaseConfig = {{
+            apiKey: "AIzaSyAMKrO-E0kK4FgzBNNbAkbtH8Vdg4Ryx_U",
+            authDomain: "othello-with-rl.firebaseapp.com",
+            projectId: "othello-with-rl",
+            storageBucket: "othello-with-rl.appspot.com",
+            messagingSenderId: "988286445200",
+            appId: "1:988286445200:web:76357a2280480fe6c81a15"
+        }};
+
         if (!firebase.apps.length) {{
             firebase.initializeApp(firebaseConfig);
         }} else {{
