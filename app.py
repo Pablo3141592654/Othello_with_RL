@@ -1,6 +1,5 @@
 import time
 import streamlit as st
-<<<<<<< HEAD
 import firebase_admin
 from firebase_admin import credentials, db, firestore
 import numpy as np
@@ -59,26 +58,6 @@ PLAYER_FACTORIES = {
         ],
     ),
     "RL Jonas (deep RL)": lambda color: RLJonas(color, model_path="rl_agent.pth", epsilon=0.0),
-=======
-import numpy as np
-from game.board import Board
-from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley, RLJonas  # <-- Add RLJonas here
-import firebase_admin
-from firebase_admin import credentials, firestore
-
-# Initialize Firebase only once
-if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase_key.json")  # Path to your Firebase service account key
-    firebase_admin.initialize_app(cred)
-db = firestore.client()
-
-PLAYER_TYPES = {
-    "Human": HumanPlayer,
-    "Greedy Greta (simple AI)": GreedyGreta,
-    "Minimax Max (lookahead AI)": MinimaxMax,
-    "RL Random Riley (random RL)": RLRandomRiley,
-    "RL Jonas (deep RL)": lambda color: RLJonas(color, model_path="rl_agent.pth", epsilon=0.0),  # <-- Use trained model, no exploration
->>>>>>> 906b877 (added some fixes after pulling (firebase integration, creation of own private key (create my own, Jonas Petersen, firebase app with own private key))
 }
 
 def render_board(board):
@@ -189,72 +168,38 @@ def select_buttons():
     st.title("Othello with RL")
     st.write("Choose a player for each color:")
 
-<<<<<<< HEAD
     black_choice = st.selectbox("Black (⚫)", list(PLAYER_FACTORIES.keys()), key="black_player")
     red_choice = st.selectbox("Red (🔴)", list(PLAYER_FACTORIES.keys()), key="red_player")
-    black_choice = st.selectbox("Black (⚫)", list(PLAYER_FACTORIES.keys()), key="black_player")
-    red_choice = st.selectbox("Red (🔴)", list(PLAYER_FACTORIES.keys()), key="red_player")
-=======
-    black_choice = st.selectbox("Black (⚫)", list(PLAYER_TYPES.keys()), key="black_player")
-    red_choice = st.selectbox("Red (🔴)", list(PLAYER_TYPES.keys()), key="red_player")
->>>>>>> 906b877 (added some fixes after pulling (firebase integration, creation of own private key (create my own, Jonas Petersen, firebase app with own private key))
 
     if st.button("Start Game"):
         st.session_state.page = "game"
         st.session_state.players = [
-<<<<<<< HEAD
             PLAYER_FACTORIES[black_choice](1),
             PLAYER_FACTORIES[red_choice](-1)
-            PLAYER_FACTORIES[black_choice](1),
-            PLAYER_FACTORIES[red_choice](-1)
-=======
-            PLAYER_TYPES[black_choice](1),
-            PLAYER_TYPES[red_choice](-1)
->>>>>>> 906b877 (added some fixes after pulling (firebase integration, creation of own private key (create my own, Jonas Petersen, firebase app with own private key))
         ]
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
         st.session_state.clicked_id = load_clicked_id()
         st.write("st.session_state.clicked_id: ", st.session_state.clicked_id)
         st.rerun()
+
     if st.button("Online"):
         board = Board().reset()
-        occupied = load_occupied() # load how many games/players are occupied/online # occupied[1] alternates between -1 and 1!! # load_occupied creates a new game if needed
-        st.session_state.game_id = occupied[0] # Get the first free game ID
+        occupied = load_occupied()
+        st.session_state.game_id = occupied[0]
         game_data = load_game_state(st.session_state.game_id)
-        st.session_state.online_color = occupied[1] # if first in game, black, else red
+        st.session_state.online_color = occupied[1]
         st.session_state.online = True
         st.session_state.page = "game"
         save_occupied(occupied[1], None)
-        occupied = load_occupied() # Refresh occupied (changed one line ago)
-
-        st.session_state.clicked_id = load_clicked_id() # before opponent joins to prevent issues
-        shown = False # to show warning only once
-
+        st.session_state.clicked_id = load_clicked_id()
+        shown = False
         while occupied[1] == -1:
-            if not shown == True:    
+            if not shown:
                 st.warning("Waiting for an opponent to join...")
                 shown = True
-            time.sleep(0.2 * st.session_state.counter) # prevent firebase from crashing
+            time.sleep(0.2 * st.session_state.counter)
             st.session_state.counter += 1
-            occupied = load_occupied() # This line crashed firebase!!!
-        st.rerun()
-    if st.button("Online"):
-        board = Board().reset()
-        occupied = load_occupied() # load how many games/players are occupied/online # occupied[1] alternates between -1 and 1!! # load_occupied creates a new game if needed
-        st.session_state.game_id = occupied[0] # Get the first free game ID
-        game_data = load_game_state(st.session_state.game_id)
-        st.session_state.online_color = occupied[1] # if first in game, black, else red
-        st.session_state.online = True
-        st.session_state.page = "game"
-        save_occupied(occupied[1], None)
-
-        shown = False # to show warning only once
-        while occupied[1] != -1:
-            if not shown == True:    
-                st.warning("Waiting for an opponent to join...")
-                shown = True
-            time.sleep(5)
             occupied = load_occupied()
         st.rerun()
 
@@ -347,14 +292,16 @@ def end_game():
     board_obj.reset()
 
     board_obj.reset()  # Reset the board state
-    save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
-    save_occupied(None, st.session_state.game_id)  # Reset occupied state
+    if st.session_state.online:
+        save_game_state(board_obj.state, 1, st.session_state.game_id)  # resets game(game_id)
+        save_occupied(None, st.session_state.game_id)  # Reset occupied state
+    reset_clicked_cell(True)
     st.session_state.clear()
     st.rerun()
 
 def autoreset():
-    if "time" not in st.session_state:
-        st.session_state.time = time.time()
+    if "time" not in st.session_state or st.session_state.time is None:
+        st.session_state.time = time.time()  # initialize it
     if time.time() - st.session_state.time > 300:  # Reset after 5min
         st.warning("Game has been reset due to inactivity.")
         end_game()
