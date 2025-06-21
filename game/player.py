@@ -50,6 +50,7 @@ class EdgesEdgar(Player):
         super().__init__(color)
         index = 0 if color == 1 else 1
         self.depth = depths[index]
+        self.edge_value = edge_value
 
     def get_move(self, board_obj):
         def edgesedgar(board, player, depth, edge_value):
@@ -67,7 +68,7 @@ class EdgesEdgar(Player):
                     best_score = score
                     best_move = move
             return best_score, best_move
-        _, move = edgesedgar(board_obj, self.color, self.depth, edge_value)
+        _, move = edgesedgar(board_obj, self.color, self.depth, self.edge_value)
         return move
 
 class RLRandomRiley(Player):
