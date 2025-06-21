@@ -46,29 +46,30 @@ class MinimaxMax(Player):
     
 class EdgesEdgar(Player):
     """Looks ahead a few moves, tries to maximize own pieces/specializes in edge control."""
-    def __init__(self, color, depths, edge_value):
+    def __init__(self, color, depths, edge_value, border_value):
         super().__init__(color)
         index = 0 if color == 1 else 1
         self.depth = depths[index]
-        self.edge_value = edge_value
+        self.edge_value = edge_value[index]
+        self.border_value = border_value[index]
 
     def get_move(self, board_obj):
-        def edgesedgar(board, player, depth, edge_value):
+        def edgesedgar(board, player, depth, edge_value, border_value):
             if depth == 0 or not board.has_valid_move(player):
-                black, red = board.count_edges(edge_value)
+                black, red = board.count_edges(edge_value, border_value)
                 return (black - red) * player, None
             best_score = float('-inf')
             best_move = None
             for move in board.get_valid_moves(player):
                 new_board = board.copy()
                 new_board.apply_move(player, *move)
-                score, _ = edgesedgar(new_board, -player, depth - 1, edge_value)
+                score, _ = edgesedgar(new_board, -player, depth - 1, edge_value, border_value)
                 score = -score
                 if score > best_score:
                     best_score = score
                     best_move = move
             return best_score, best_move
-        _, move = edgesedgar(board_obj, self.color, self.depth, self.edge_value)
+        _, move = edgesedgar(board_obj, self.color, self.depth, self.edge_value, self.border_value)
         return move
 
 class RLRandomRiley(Player):
