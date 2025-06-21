@@ -46,7 +46,7 @@ class MinimaxMax(Player):
     
 class EdgesEdgar(Player):
     """Looks ahead a few moves, tries to maximize own pieces/specializes in edge control."""
-    def __init__(self, color, depths):
+    def __init__(self, color, depths, edge_value):
         super().__init__(color)
         index = 0 if color == 1 else 1
         self.depth = depths[index]
