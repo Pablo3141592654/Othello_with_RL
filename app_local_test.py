@@ -26,10 +26,21 @@ PLAYER_FACTORIES = {
         st.session_state.get("red_depth", 2)
     ]),
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
-    "Edges Edgar (edge control AI)": lambda color: EdgesEdgar(color, depths=[
-        st.session_state.get("black_depth", 2),
-        st.session_state.get("red_depth", 2)
-    ], edge_value=st.session_state.get("edge_value", 2)),
+    "Edges Edgar (edge control AI)": lambda color: EdgesEdgar(
+        color,
+        depths=[
+            st.session_state.get("black_depth", 2),
+            st.session_state.get("red_depth", 2)
+        ],
+        edge_value=[
+            st.session_state.get("edge_value_black", 2),
+            st.session_state.get("edge_value_red", 2)
+        ],
+        border_value=[
+            st.session_state.get("border_value_black", 1),
+            st.session_state.get("border_value_red", 1)
+        ],
+    ),
 }
 
 def render_board(board):
@@ -338,9 +349,21 @@ def main():
         "Red AI depth", min_value=1, max_value=5, value=2)
     st.session_state.red_depth = red_depth
 
-    edge_value = st.sidebar.slider(
-        "Edge value for Edges Edgar", min_value=0, max_value=6, value=2)
-    st.session_state.edge_value = edge_value
+    edge_value_black = st.sidebar.slider(
+        "Edge value black for Edges Edgar", min_value=0, max_value=6, value=3)
+    st.session_state.edge_value_black = edge_value_black
+
+    edge_value_red = st.sidebar.slider(
+        "Edge value red for Edges Edgar", min_value=0, max_value=6, value=3)
+    st.session_state.edge_value_red = edge_value_red
+
+    border_value_black = st.sidebar.slider(
+        "Border value black for Edges Edgar", min_value=0, max_value=6, value=1)
+    st.session_state.border_value_black = border_value_black
+
+    border_value_red = st.sidebar.slider(
+        "Border value red for Edges Edgar", min_value=0, max_value=6, value=1)
+    st.session_state.border_value_red = border_value_red
 
     if "page" not in st.session_state:
         st.session_state.page = "select"
