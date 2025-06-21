@@ -6,7 +6,7 @@ import numpy as np
 from IPython.display import display
 import streamlit.components.v1 as components
 from game.board import Board
-from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley
+from game.player import HumanPlayer, GreedyGreta, MinimaxMax, RLRandomRiley, EdgesEdgar
 
 # Build credentials dict from Streamlit secrets
 firebase_config = {
@@ -42,6 +42,7 @@ PLAYER_FACTORIES = {
         st.session_state.get("red_depth", 2)
     ]),
     "RL Random Riley (random RL)": lambda color: RLRandomRiley(color),
+    "Edges Edgar (edge control AI)": lambda color: EdgesEdgar(color, edge_value=st.session_state.get("edge_value", 2)),
 }
 
 def render_board(board):
@@ -352,6 +353,10 @@ def main():
     red_depth = st.sidebar.slider(
         "Red AI depth", min_value=1, max_value=5, value=2)
     st.session_state.red_depth = red_depth
+
+    edge_value = st.sidebar.slider(
+        "Edge value for Edges Edgar", min_value=0, max_value=6, value=2)
+    st.session_state.edge_value = edge_value
 
     if "page" not in st.session_state:
         st.session_state.page = "select"
