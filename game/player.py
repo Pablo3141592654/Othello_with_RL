@@ -43,6 +43,32 @@ class MinimaxMax(Player):
             return best_score, best_move
         _, move = minimax(board_obj, self.color, self.depth)
         return move
+    
+class EdgesEdgar(Player):
+    """Looks ahead a few moves, tries to maximize own pieces/specializes in edge control."""
+    def __init__(self, color, depths):
+        super().__init__(color)
+        index = 0 if color == 1 else 1
+        self.depth = depths[index]
+
+    def get_move(self, board_obj):
+        def edgesedgar(board, player, depth, edge_value):
+            if depth == 0 or not board.has_valid_move(player):
+                black, red = board.count_edges(edge_value)
+                return (black - red) * player, None
+            best_score = float('-inf')
+            best_move = None
+            for move in board.get_valid_moves(player):
+                new_board = board.copy()
+                new_board.apply_move(player, *move)
+                score, _ = edgesedgar(new_board, -player, depth - 1, edge_value)
+                score = -score
+                if score > best_score:
+                    best_score = score
+                    best_move = move
+            return best_score, best_move
+        _, move = edgesedgar(board_obj, self.color, self.depth, edge_value)
+        return move
 
 class RLRandomRiley(Player):
     """Placeholder RL agent: picks a random valid move."""
