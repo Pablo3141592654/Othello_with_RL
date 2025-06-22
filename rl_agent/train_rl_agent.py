@@ -1,4 +1,6 @@
+import sys
 import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import numpy as np
 from game.board import Board
 from rl_agent.rl_agent import RLAgent
@@ -9,6 +11,9 @@ from collections import deque
 import re
 from datetime import datetime
 import json
+import random
+from tqdm import tqdm  # For progress bars (optional, but common in RL)
+from typing import Any, Tuple, List, Optional
 
 # --- Helper functions for model filename convention ---
 def parse_episode_count_from_filename(filename):
@@ -37,34 +42,46 @@ def save_metadata(model_path, total_episodes, config):
     print(f"Metadata saved to {meta_path}")
 
 # --- Setup ---
+import argparse
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train RL agent for Othello with curriculum learning.")
+    parser.add_argument('--resume', type=str, default=None, help='Path to run folder to resume training from')
+    return parser.parse_args()
+
+args = parse_args()
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-NUM_EPISODES = 50
+NUM_EPISODES = 500
 MODEL_DIR = "rl_agent/models"
 
 from datetime import datetime
 TRAINING_PHILOSOPHY = "SR-PMO"  # SR = shaped reward, PMO = progressive more difficult opponents
-run_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-run_folder_name = f"run_{run_timestamp}_ep{NUM_EPISODES}_{TRAINING_PHILOSOPHY}"
-RUN_DIR = os.path.join(MODEL_DIR, run_folder_name)
-os.makedirs(RUN_DIR, exist_ok=True)
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-NUM_EPISODES = 50
-MODEL_DIR = "rl_agent/models"
-
-opponent = RLRandomRiley(-1)
-opponent_name = type(opponent).__name__  # For filename
+if args.resume:
+    RUN_DIR = args.resume
+    print(f"Resuming training in {RUN_DIR}")
+else:
+    run_timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    run_folder_name = f"run_{run_timestamp}_ep{NUM_EPISODES}_{TRAINING_PHILOSOPHY}"
+    RUN_DIR = os.path.join(MODEL_DIR, run_folder_name)
+    os.makedirs(RUN_DIR, exist_ok=True)
 
 # Detect if resuming from a previous model
 existing_model = None
 existing_episodes = 0
-
+opponent_name = None
 # Find latest model for this opponent (optional: could be improved to pick latest by date)
 for fname in os.listdir(MODEL_DIR):
-    if fname.startswith(f"opp{opponent_name}_") and fname.endswith(".pth"):
-        if parse_episode_count_from_filename(fname) > existing_episodes:
-            existing_model = fname
-            existing_episodes = parse_episode_count_from_filename(fname)
+    if fname.startswith("opp") and fname.endswith(".pth"):
+        # Extract opponent name from filename
+        match = re.match(r'opp([A-Za-z0-9_]+)_', fname)
+        if match:
+            name = match.group(1)
+            episodes = parse_episode_count_from_filename(fname)
+            if episodes > existing_episodes:
+                existing_model = fname
+                existing_episodes = episodes
+                opponent_name = name
 
 total_episodes = existing_episodes + NUM_EPISODES
 MODEL_NAME = build_model_filename(opponent_name, total_episodes, device.type)
@@ -163,12 +180,10 @@ def test_agent(agent, opponent, episodes=20):
     print(f"Test results over {episodes} games: Wins: {wins}, Losses: {losses}, Draws: {draws}")
 
 def select_opponent(win_rate, phase):
-    # Curriculum: 0=Random, 1=GreedyGreta, 2=MinimaxMax, 3=Self-play
+    # Curriculum: 0=Random, 1=MinimaxMax, 2=Self-play
     if phase == 0:
         return RLRandomRiley(-1), 'RLRandomRiley'
     elif phase == 1:
-        return GreedyGreta(-1), 'GreedyGreta'
-    elif phase == 2:
         return MinimaxMax(-1, depths=[2,2]), 'MinimaxMax'
     else:
         # Self-play: agent vs. previous best
@@ -184,24 +199,30 @@ if __name__ == "__main__":
     win_window = deque(maxlen=100)
     total_wins = 0
     avg_score_diff = 0
-    phase = 0  # 0: random, 1: greedy, 2: minimax, 3: self-play
-    win_thresholds = [0.9, 0.7, 0.5]  # thresholds to move to next phase
+    phase = 0  # 0: random, 1: minimax, 2: self-play
+    win_thresholds = [0.9, 0.5]  # thresholds to move to next phase
+    min_episodes_per_phase = [10, 1, 1]  # Minimum episodes per phase (10 for RandomRiley)
     opponent, opponent_name = select_opponent(0, phase)
 
     # Parse previous episode count if resuming
     prev_episodes = 0
     base_model_name = None
-    if os.path.exists(MODEL_PATH):
-        agent.model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
-        print(f"Loaded existing model from {MODEL_PATH}")
-        prev_episodes = parse_episode_count_from_filename(MODEL_NAME)
-        # Remove _{n}Episodes.pth to get base name
-        base_model_name = re.sub(r'_\\d+Episodes\\.pth$', '', MODEL_NAME)
+    if args.resume and os.path.exists(RUN_DIR):
+        # Resume from latest model in run dir
+        model_files = [f for f in os.listdir(RUN_DIR) if f.endswith('.pth')]
+        if model_files:
+            latest_model = sorted(model_files)[-1]
+            agent.model.load_state_dict(torch.load(os.path.join(RUN_DIR, latest_model), map_location=device))
+            print(f"Loaded existing model from {os.path.join(RUN_DIR, latest_model)}")
+            prev_episodes = parse_episode_count_from_filename(latest_model)
+            base_model_name = re.sub(r'_\\d+Episodes\\.pth$', '', latest_model)
+        else:
+            base_model_name = f"opp{opponent_name}_{TRAINING_PHILOSOPHY}"
     else:
         # Remove _{n}Episodes.pth if present, else strip .pth
-        base_model_name = re.sub(r'_\\d+Episodes\\.pth$', '', MODEL_NAME)
-        base_model_name = base_model_name.replace('.pth', '')
+        base_model_name = f"opp{opponent_name}_{TRAINING_PHILOSOPHY}"
 
+    phase_episode_counter = 0
     for episode in range(NUM_EPISODES):
         black_score, red_score = play_game(agent, opponent, train=True)
         agent.train_step()
@@ -220,10 +241,12 @@ if __name__ == "__main__":
             "opponent": opponent_name
         })
         print(f"Episode {prev_episodes + episode + 1}: Black {black_score}, Red {red_score}, Win rate: {win_rate:.2f}, Phase: {phase}, Opponent: {opponent_name}")
-        # Curriculum switch
-        if phase < len(win_thresholds) and win_rate >= win_thresholds[phase]:
+        phase_episode_counter += 1
+        # Curriculum switch: require minimum episodes per phase
+        if phase < len(win_thresholds) and win_rate >= win_thresholds[phase] and phase_episode_counter >= min_episodes_per_phase[phase]:
             phase += 1
             opponent, opponent_name = select_opponent(win_rate, phase)
+            phase_episode_counter = 0
             print(f"Switching to phase {phase}: Opponent {opponent_name}")
         # Periodic checkpoint saving every 1000 episodes
         if (episode + 1) % 1000 == 0:
