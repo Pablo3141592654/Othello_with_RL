@@ -47,12 +47,14 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Train RL agent for Othello with curriculum learning.")
     parser.add_argument('--resume', type=str, default=None, help='Path to run folder to resume training from')
+    parser.add_argument('--episodes', type=int, default=500, help='Number of episodes to train (default: 500)')
     return parser.parse_args()
 
 args = parse_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-NUM_EPISODES = 500
+# Use episodes from argument
+NUM_EPISODES = args.episodes
 MODEL_DIR = "rl_agent/models"
 
 from datetime import datetime
