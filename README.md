@@ -139,6 +139,34 @@ This lets you test all game features, AI, and Firebase logic without needing clo
 
 ---
 
+## ⚠️ RL Agent: Known Issues & Next Steps
+
+**Current Status:**
+- The DQN-based RL agent for Othello is implemented and trains with detailed diagnostics (see `rl_agent/train_rl_agent.py`).
+- Training is tracked with Weights & Biases (wandb).
+
+**Known Issues:**
+- Q-values and losses explode after ~200 episodes in long training runs (see wandb charts).
+- This leads to instability and poor agent performance (does not outperform random/heuristic baselines).
+
+**Suspected Causes:**
+- Learning rate may still be too high.
+- Overestimation bias in vanilla DQN (Double DQN may help).
+- Lack of reward normalization (reward clipping is used).
+- Target network update frequency or batch size may be suboptimal.
+- Network architecture or initialization may contribute.
+
+**Next Steps:**
+- Lower the learning rate further.
+- Implement Double DQN.
+- Consider Q-value clipping or reward normalization.
+- Review target network update frequency and batch size.
+- Explore architectural changes if needed.
+
+See `rl_agent/DQN_issues_and_next_steps.md` for a detailed summary and action plan.
+
+---
+
 ## 👥 Authors
 
 - **Pablo Petersen**: Game logic, UI, Firebase integration, classic AI (Minimax, Edges)
