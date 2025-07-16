@@ -8,6 +8,7 @@ __pycache__/
 venv/
 env/
 .venv/
+.conda/
 ENV/
 
 # IDE files (specific to VSCode and PyCharm, for example)
@@ -16,5 +17,26 @@ ENV/
 *.swp
 *.swo
 
+# Model files and training artifacts
+*.pth
+*.pt
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.ckpt
+*.meta.json
+rl_agent/models/
+models/
+checkpoints/
+checkpoint*/
+
+# Experiment tracking and logging
+wandb/
+logs/
+tensorboard_logs/
+*.log
+
 # private configuration files
 firebase_key.json
+.streamlit/secrets.toml
