@@ -496,7 +496,7 @@ def main():
         st.warning("Waiting for opponent's move...")
         autoreset()
         time.sleep(0.2 * st.session_state.counter)
-        st.sesison_state.counter += 1 # prevent firebase from crashing
+        st.session_state.counter += 1 # prevent firebase from crashing
         game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
             st.session_state.board_obj.state = game_data[0] # needs to be session_state cause board_obj is defined in if clause
