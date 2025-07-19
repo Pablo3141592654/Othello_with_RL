@@ -44,6 +44,8 @@ PLAYER_FACTORIES = {
 }
 
 def render_board(board):
+
+    
     board_html = ""
     for i in range(8):
         for j in range(8):
@@ -139,8 +141,6 @@ def render_board(board):
     if data["cell"] is not None:
         st.session_state.clicked_cell = data["cell"]
         reset_clicked_cell(False)
-    else:
-        st.write("No cell clicked yet.")
     return
 
 
@@ -176,13 +176,17 @@ def select_buttons():
         st.session_state.clicked_id = load_clicked_id() # before opponent joins to prevent issues
         shown = False # to show warning only once
 
+        warning_placeholder = st.empty()
+        
         while occupied[1] == -1:
             if not shown == True:    
-                st.warning("Waiting for an opponent to join...")
+                warning_placeholder.warning("Waiting for an opponent to join...")
                 shown = True
             time.sleep(0.2 * st.session_state.counter) # prevent firebase from crashing
             st.session_state.counter += 1
             occupied = load_occupied() # This line crashed firebase!!!
+        
+        warning_placeholder.empty() # make sure the previous warning disappears
         st.rerun()
 
 def save_game_state(board, current_player, game_id):
@@ -339,7 +343,6 @@ def main():
     if "rerun" not in st.session_state:
             st.session_state.rerun = False
     
-
     # Add this at the top of main()
     ai_think_time = st.sidebar.slider(
         "AI thinking time (seconds)", min_value=0.0, max_value=3.0, value=0.5, step=0.1
@@ -410,10 +413,11 @@ def main():
     black_count, red_count = board_obj.count_pieces()
     st.write(f"**⚫ Black: {black_count}** | **🔴 Red: {red_count}**")
     st.write(f"### Current Turn: {'⚫' if current_player.color == 1 else '🔴'}")
-    if st.session_state.online and st.session_state.setup == False:
+    if st.session_state.online:
         st.write("Online mode, you are playing as " + ("⚫" if st.session_state.online_color == 1 else "🔴"))
-        board_obj.state = load_game_state(st.session_state.game_id)[0]  # Load game state from Firestore
-        st.session_state.setup = True
+        # if st.session_state.setup == False:
+        #     board_obj.state = load_game_state(st.session_state.game_id)[0]  # Load game state from Firestore
+        #     st.session_state.setup = True
     render_board(board_obj.state)
 
     if not st.session_state.rerun:
@@ -474,16 +478,17 @@ def main():
             st.session_state.rerun = True
             st.rerun()
     else:
-        st.warning("Waiting for opponent's move...")
         autoreset()
         time.sleep(0.2 * st.session_state.counter)
-        st.sesison_state.counter += 1 # prevent firebase from crashing
+        st.session_state.counter += 1 # prevent firebase from crashing
         game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
             st.session_state.board_obj.state = game_data[0] # needs to be session_state cause board_obj is defined in if clause
             st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
             st.session_state.rerun = False
+            st.warning("Your turn now!")
             st.rerun()
+        st.warning("Waiting for opponent's move...")
         st.session_state.rerun = True
         st.rerun()
 
