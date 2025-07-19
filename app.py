@@ -158,8 +158,6 @@ def render_board(board):
     if data["cell"] is not None:
         st.session_state.clicked_cell = data["cell"]
         reset_clicked_cell(False)
-    else:
-        st.write("No cell clicked yet.")
     return
 
 
