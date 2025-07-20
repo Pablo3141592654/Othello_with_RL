@@ -139,6 +139,47 @@ This lets you test all game features, AI, and Firebase logic without needing clo
 
 ---
 
+## 🤖 RL Agent Architecture & Implementation
+
+**Overview:**
+The RL agent uses Deep Q-Network (DQN) reinforcement learning to learn Othello strategy through self-play and curriculum learning. The agent learns by estimating Q-values (action-values) for each possible move given a board state.
+
+**Architecture:**
+- **Neural Network**: Convolutional neural network with 2 conv layers (64→128 channels) + fully connected layers
+- **Input**: 8×8×2 tensor (2 channels: current player's pieces + opponent's pieces)  
+- **Output**: 64 Q-values (one for each board position)
+- **Target Network**: Separate target network updated periodically for stable training
+
+**Design Choices & Process:**
+- **2-Channel Input**: Uses player-relative encoding (own pieces, opponent pieces) rather than absolute colors. This makes the agent color-agnostic and improves generalization.
+- **CNN Architecture**: Convolutional layers capture spatial patterns (like edge control, clustering) crucial in Othello strategy.
+- **Hyperparameters**: Learning rate 1e-4, batch size 32, replay buffer 10k experiences, target network update every 100 steps, ε=0.1 exploration.
+- **Reward Design**: Experimented with reward shaping (piece differential, corner bonuses) vs pure win/loss rewards. Currently uses minimal shaping to avoid bias.
+- **Training Philosophy**: Curriculum learning from simple (random) to complex (self-play) opponents to build robust strategies progressively.
+
+**Training Process:**
+1. **Curriculum Learning**: Progressive difficulty opponents
+   - Phase 1: Random moves (RLRandomRiley) - learn basic rules
+   - Phase 2: Minimax AI (depth 2) - learn strategic play  
+   - Phase 3: Self-play - refine strategy against itself
+2. **Experience Replay**: Store and sample past experiences for training stability
+3. **ε-greedy Exploration**: Balance exploration vs exploitation during training
+4. **Reward Shaping**: Immediate rewards for piece differential, large rewards for wins/losses
+
+**Key Components:**
+- `rl_agent/rl_agent.py` - Main DQN agent implementation
+- `rl_agent/q_network.py` - Neural network architecture  
+- `rl_agent/train_rl_agent.py` - Training script with curriculum learning
+- `rl_agent/utils.py` - Board state preprocessing utilities
+- **Monitoring**: Weights & Biases integration for training metrics and visualization
+
+**Usage:**
+```bash
+python rl_agent/train_rl_agent.py --episodes 1000
+```
+
+---
+
 ## ⚠️ RL Agent: Known Issues & Next Steps
 
 **Current Status:**
