@@ -1,6 +1,6 @@
 # Othello\_with\_RL
 
-A modern, interactive Othello/Reversi game built with [Streamlit](https://streamlit.io/) for the web, featuring multiple play modes and a roadmap for advanced AI opponents—including a reinforcement learning (RL) agent.
+A modern, interactive Othello/Reversi game built with [Streamlit](https://streamlit.io/) for the web, featuring multiple AI opponents and a roadmap for a reinforcement learning (RL) agent.
 
 It is also online accessible under [https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/](https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/)
 
@@ -34,7 +34,7 @@ If you want to develop or test the app locally:
 1. **Clone the repository:**
 
    ```sh
-   git clone https://github.com/yourusername/Othello_with_RL.git
+   git clone https://github.com/Pablo3141592654/Othello_with_RL.git
    cd Othello_with_RL
    ```
 
@@ -95,19 +95,6 @@ This lets you test all game features, AI, and Firebase logic without needing clo
   - `EdgesEdgar`: Minimax variant that prioritizes edge/border control
   - `RLRandomRiley`: Picks a random legal move (RL placeholder)
 
-### AI Agent Code (from `game/player.py`)
-
-```python
-# ... (same code block as before)
-```
-
----
-
-### Board Logic (from `game/board.py`)
-
-```python
-# ... (same code block as before)
-```
 
 ---
 
@@ -120,7 +107,20 @@ This lets you test all game features, AI, and Firebase logic without needing clo
 ## 📄 Code Structure
 
 ```
-# ... (same structure block)
+# ... 📁 Othello_with_RL/
+│
+├── app.py                   # Main Streamlit app for production/deployment
+├── app_local_test.py        # Local dev version (bypasses streamlit secrets)
+│
+├── game/
+│   ├── __init__.py
+│   ├── board.py             # Core game logic (valid moves, scoring, etc.)
+│   └── player.py            # Player base class + AI bots (Minimax, Edge, etc.)
+│
+├── requirements.txt         # Python dependencies
+├── README.md                # Project documentation
+└── .streamlit/
+    └── secrets.toml         # (Used on Streamlit Cloud for Firebase config)
 ```
 
 ---
