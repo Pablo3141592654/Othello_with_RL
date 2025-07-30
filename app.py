@@ -178,6 +178,7 @@ def select_buttons():
         st.session_state.board_obj = Board()
         st.session_state.clicked_id = load_clicked_id()
         st.rerun()
+        return # prevents UI from showing the "Online" button
     if st.button("Online"):
         board = Board().reset()
         occupied = load_occupied() # load how many games/players are occupied/online # occupied[1] alternates between -1 and 1!! # load_occupied creates a new game if needed
@@ -204,6 +205,7 @@ def select_buttons():
         
         warning_placeholder.empty() # make sure the previous warning disappears
         st.rerun()
+        return
 
 def save_game_state(board, current_player, game_id):
     # Flatten 2D board into a list of lists (Firestore doesn't support nested arrays beyond 1 level)
