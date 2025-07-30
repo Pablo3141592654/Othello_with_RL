@@ -177,7 +177,6 @@ def select_buttons():
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
         st.session_state.clicked_id = load_clicked_id()
-        st.write("st.session_state.clicked_id: ", st.session_state.clicked_id)
         st.rerun()
     if st.button("Online"):
         board = Board().reset()
