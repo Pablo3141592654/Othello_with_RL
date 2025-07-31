@@ -151,7 +151,9 @@ def select_buttons():
     black_choice = st.selectbox("Black (⚫)", list(PLAYER_FACTORIES.keys()), key="black_player")
     red_choice = st.selectbox("Red (🔴)", list(PLAYER_FACTORIES.keys()), key="red_player")
 
-    if st.button("Start Game"):
+    button_placeholder = st.empty()
+    online_placeholder = st.empty()
+    if button_placeholder.button("Start Game"):
         st.session_state.page = "game"
         st.session_state.players = [
             PLAYER_FACTORIES[black_choice](1),
@@ -160,9 +162,10 @@ def select_buttons():
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
         st.session_state.clicked_id = load_clicked_id()
-        st.write("st.session_state.clicked_id: ", st.session_state.clicked_id)
+        button_placeholder.empty()  # Clear the button after starting the game
+        online_placeholder.empty()  # Clear the online button
         st.rerun()
-    if st.button("Online"):
+    if online_placeholder.button("Online"):
         board = Board().reset()
         occupied = load_occupied() # load how many games/players are occupied/online # occupied[1] alternates between -1 and 1!! # load_occupied creates a new game if needed
         st.session_state.game_id = occupied[0] # Get the first free game ID
@@ -187,6 +190,8 @@ def select_buttons():
             occupied = load_occupied() # This line crashed firebase!!!
         
         warning_placeholder.empty() # make sure the previous warning disappears
+        online_placeholder.empty()  # Clear the button after starting the game
+        button_placeholder.empty()  # Clear the button after starting the game
         st.rerun()
 
 def save_game_state(board, current_player, game_id):
