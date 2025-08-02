@@ -5,6 +5,7 @@ A modern, interactive Othello/Reversi game built with [Streamlit](https://stream
 It is also online accessible under [https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/](https://othellowithrl-uv9hqcazqfofjwnsfbnrzx.streamlit.app/)
 
 ---
+#### Video Demo: https://www.youtube.com/watch?v=hEmuIggx89g&t=4s
 
 ## 🎮 Features
 
