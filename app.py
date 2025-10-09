@@ -465,6 +465,7 @@ def main():
         ):           # AI move handling
             if not isinstance(current_player, HumanPlayer):
                 time.sleep(st.session_state.ai_think_time)
+                st.session_state.counter == 0 # resets counter to prevent firebase saver to slow down ai games
                 move = current_player.get_move(board_obj)
                 if move:
                     board_obj.apply_move(current_player.color, *move)
