@@ -149,7 +149,7 @@ def render_board(board):
     </script>
     """
     components.html(full_html, height=400, scrolling=False)
-    time.sleep(min(0.2 * st.session_state.counter, 2.0))) # slow down reruns to prevent firebase from crashing
+    time.sleep(min(0.2 * st.session_state.counter, 2.0)) # slow down reruns to prevent firebase from crashing
     st.session_state.counter += 1
 
     doc_ref = db.collection("clicked_cell").document(f"{st.session_state.clicked_id}")
