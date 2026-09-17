@@ -149,7 +149,7 @@ def render_board(board):
     </script>
     """
     components.html(full_html, height=400, scrolling=False)
-    time.sleep(0.2 * st.session_state.counter) # slow down reruns to prevent firebase from crashing
+    time.sleep(min(0.2 * st.session_state.counter, 2.0))) # slow down reruns to prevent firebase from crashing
     st.session_state.counter += 1
 
     doc_ref = db.collection("clicked_cell").document(f"{st.session_state.clicked_id}")
@@ -179,6 +179,7 @@ def select_buttons():
         st.session_state.current_player_idx = 0
         st.session_state.board_obj = Board()
         st.session_state.clicked_id = load_clicked_id()
+        st.session_state.counter = 0
         button_placeholder.empty()  # Clear the button after starting the game
         online_placeholder.empty()  # Clear the online button
         st.rerun()
@@ -202,11 +203,12 @@ def select_buttons():
             if not shown == True:    
                 warning_placeholder.warning("Waiting for an opponent to join...")
                 shown = True
-            time.sleep(0.2 * st.session_state.counter) # prevent firebase from crashing
+            time.sleep(min(0.2 * st.session_state.counter, 2.0)) # prevent firebase from crashing
             st.session_state.counter += 1
             occupied = load_occupied() # This line crashed firebase!!!
         
         warning_placeholder.empty() # make sure the previous warning disappears
+        st.session_state.counter = 0
         online_placeholder.empty()  # Clear the button after starting the game
         button_placeholder.empty()  # Clear the button after starting the game
         st.rerun()
@@ -334,8 +336,11 @@ def reset_clicked_cell(game_over):
         occupied_ref = db.collection("occupied").document("1")
         occupied_data = occupied_ref.get()
         occupied_data = occupied_data.to_dict()
-        clicked = occupied_data["clicked_id"]
-        clicked.remove(st.session_state.clicked_id) # remove clicked_id from occupied
+        clicked = occupied_data.get("clicked_id", [])
+        try:
+            clicked.remove(st.session_state.clicked_id)  # remove clicked_id from occupied
+        except ValueError:
+            pass  # clicked_id war nicht (mehr) in der Liste – ok
         occupied_ref.set({
             "clicked_id": clicked
         }, merge=True)
@@ -452,11 +457,12 @@ def main():
                     st.success("Game ended. 🔴 Red won!")
                 else:
                     st.info("Game ended. It's a draw!")
-                time.sleep(50)
+                time.sleep(10)
                 end_game()
             else:
                 st.info(f"No valid moves for {'⚫' if current_player.color == 1 else '🔴'}. Passing turn.")
                 st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
+                st.session_state.counter = 0
                 st.rerun()
 
         if not st.session_state.online and (
@@ -465,7 +471,7 @@ def main():
         ):           # AI move handling
             if not isinstance(current_player, HumanPlayer):
                 time.sleep(st.session_state.ai_think_time)
-                st.session_state.counter == 0 # resets counter to prevent firebase saver to slow down ai games
+                st.session_state.counter = 0 # resets counter to prevent firebase saver to slow down ai games
                 move = current_player.get_move(board_obj)
                 if move:
                     board_obj.apply_move(current_player.color, *move)
@@ -502,13 +508,14 @@ def main():
             st.rerun()
     else:
         autoreset()
-        time.sleep(0.2 * st.session_state.counter)
+        time.sleep(min(0.2 * st.session_state.counter, 2.0))
         st.session_state.counter += 1 # prevent firebase from crashing
         game_data = load_game_state(st.session_state.game_id)
         if game_data[1] == st.session_state.online_color:
             st.session_state.board_obj.state = game_data[0] # needs to be session_state cause board_obj is defined in if clause
             st.session_state.current_player_idx = 1 - st.session_state.current_player_idx
             st.session_state.rerun = False
+            st.session_state.counter = 0
             st.warning("Your turn now!")
             st.rerun()
         st.warning("Waiting for opponent's move...")
